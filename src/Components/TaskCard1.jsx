@@ -3,15 +3,39 @@ import React, { useEffect, useState } from "react";
 import { PiDotsThreeOutlineLight } from "react-icons/pi";
 import card1 from "../assets/krishna1.jpg";
 import { FaRegImage } from "react-icons/fa6";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const TaskCard1 = ({ cardData }) => {
+  let token =
+    useSelector((state) => state.tokenBucket.token) ??
+    sessionStorage.getItem("todoToken");
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleEdit = async () => {
+    setAnchorEl(null);
+    try {
+      let { data } = await axios.get(
+        `http://localhost:3000/gettask/${cardData.cardId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -42,9 +66,10 @@ const TaskCard1 = ({ cardData }) => {
             },
           }}
         >
-          <MenuItem onClick={handleClose}>Profile</MenuItem>
-          <MenuItem onClick={handleClose}>My account</MenuItem>
-          <MenuItem onClick={handleClose}>Logout</MenuItem>
+          <MenuItem onClick={handleClose}>Mark Vital</MenuItem>
+          <MenuItem onClick={handleEdit}>Edit</MenuItem>
+          <MenuItem onClick={handleClose}>Delete</MenuItem>
+          <MenuItem onClick={handleClose}>Finish</MenuItem>
         </Menu>
       </div>
 

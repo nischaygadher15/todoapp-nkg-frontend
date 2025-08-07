@@ -31,7 +31,6 @@ const Dashboard = () => {
   let token =
     useSelector((state) => state.tokenBucket.token) ??
     sessionStorage.getItem("todoToken");
-  let loading = useSelector((state) => state.loader.isLoading);
   let [inviteModel, setInviteModel] = useState(false);
   let [addTaskModel, setAddTaskModel] = useState(false);
 
@@ -239,6 +238,7 @@ const Dashboard = () => {
                 <li key={`todoCard-${inx}`}>
                   <TaskCard1
                     cardData={{
+                      cardId: tsk._id,
                       cardStatus: tsk.status,
                       cardTitle: tsk.tasktitle,
                       cardDesc: tsk.taskdesc,
