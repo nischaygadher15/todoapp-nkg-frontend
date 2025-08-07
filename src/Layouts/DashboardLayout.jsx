@@ -18,8 +18,8 @@ import { toast } from "react-toastify";
 const DashboardLayout = ({ dashTitle, children }) => {
   let dispatch = useDispatch();
   let navigateVar = useNavigate();
-  let username = useSelector((state) => state.user.username);
-  let useremail = useSelector((state) => state.user.useremail);
+  let username = useSelector((state) => state.user.data.username);
+  let useremail = useSelector((state) => state.user.data.useremail);
   let days = [
     "sunday",
     "monday",
@@ -167,11 +167,11 @@ const DashboardLayout = ({ dashTitle, children }) => {
         {/* Left Navigation Bar */}
         <section className="bg-transparent fixed h-screen top-0 min-w-[260px] w-[260px] text-white pt-[140px]">
           <div
-            className="bg-[#FF6767] h-full rounded-tr-md 
-        rounded-br-md flex flex-col"
+            className="relative bg-[#FF6767] h-full rounded-tr-md 
+        rounded-br-md flex flex-col pt-24"
           >
-            {/* Userhoto */}
-            <div className="-translate-y-[35px] mb-3">
+            {/* User photo */}
+            <div className="absolute top-0 -translate-y-1/4 w-full">
               <Avatar
                 alt="Userphoto"
                 src={userphoto}
@@ -183,14 +183,14 @@ const DashboardLayout = ({ dashTitle, children }) => {
                   marginX: "auto",
                 }}
               />
-              <p className="font-semibold text-center">{username}</p>
+              <p className="font-semibold text-center capitalize">{username}</p>
               <p className="text-sm text-center">{useremail}</p>
             </div>
 
             {/* Left Navbar */}
             <ul
-              className="w-full flex flex-1 flex-col gap-2 overflow-y-scroll justify-between px-5 
-            -translate-y-[35px] myScrollBar"
+              className="w-full flex flex-col gap-2 overflow-y-scroll justify-between px-5 
+            myScrollBar"
             >
               <li className="hover:bg-white hover:text-[#FF6767] rounded-xl">
                 <NavLink

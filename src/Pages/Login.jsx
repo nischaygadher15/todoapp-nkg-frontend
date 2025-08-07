@@ -64,13 +64,6 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("Login component mounted");
-    return () => {
-      console.log("Login component unmounted");
-    };
-  }, []);
-
   return (
     <div className="w-full h-screen bg-[#ff7373] p-7 sm:p-[50px] md:p-[70px]">
       <div className="bg-white h-full rounded-lg flex">

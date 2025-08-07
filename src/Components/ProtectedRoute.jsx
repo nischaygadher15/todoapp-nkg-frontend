@@ -29,7 +29,7 @@ const ProtectedRoute = ({ children }) => {
       if (token != null) {
         try {
           let { data } = await axios.post(
-            "http://localhost:3000/verifytoken",
+            "http://localhost:3000/auth",
             { token },
             {
               headers: {
@@ -48,7 +48,7 @@ const ProtectedRoute = ({ children }) => {
         } catch (error) {
           console.log(error);
           clearUserData();
-          if (error.ressponse && error.ressponse.status != 401) {
+          if (error.response && error.response.status != 401) {
             toast.error(error.ressponse.data.message);
           } else {
             toast.error(error.message);

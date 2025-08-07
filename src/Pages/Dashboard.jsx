@@ -20,45 +20,20 @@ import { LuImageUp } from "react-icons/lu";
 import { useDropzone } from "react-dropzone";
 import { useSelector } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
+import axios from "axios";
 
 const Dashboard = () => {
-  let username = useSelector((state) => state.user.username);
+  let username = useSelector((state) => state.user.data.username);
+  let userId = useSelector((state) => state.user.data._id);
+  let token =
+    useSelector((state) => state.tokenBucket.token) ??
+    sessionStorage.getItem("todoToken");
   let [inviteModel, setInviteModel] = useState(false);
   let [addTaskModel, setAddTaskModel] = useState(false);
-  // let [taskImage, setTaskImage] = useState("");
-  // let [taksImgErr, setTaskImgErr] = useState("");
 
   let dashavatar = [matsya, kurma, varah, vaman];
 
   let handleClose = () => setInviteModel(false);
-
-  {
-    /* <===============  Drag and drop feature callback function  ==============>*/
-  }
-  // let dragDropFile = (files) => {
-  //   // console.log(files);
-  //   let lastDotIndex = files[0].name.lastIndexOf(".");
-  //   let fileName = files[0].name.slice(0, lastDotIndex);
-  //   let imageExt = files[0].name.slice(lastDotIndex + 1);
-  //   setTaskImage(`${fileName.substring(0, 15)}....${imageExt}`);
-  //   if (files[0]?.size > 5000000) {
-  //     setTaskImgErr("files size must be less than 5 MB.");
-  //   } else {
-  //     if (
-  //       !["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
-  //         files[0].type
-  //       )
-  //     ) {
-  //       setTaskImgErr("Only JPG/JPEG/PNG/WEBP is allowed.");
-  //     } else {
-  //       setTaskImgErr("");
-  //     }
-  //   }
-  // };
-
-  // let { getRootProps, getInputProps, isDragActive } = useDropzone({
-  //   onDrop: useCallback(dragDropFile),
-  // });
 
   let todoCards = [
     {
@@ -129,8 +104,24 @@ const Dashboard = () => {
   {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
   }
-  let onAddTask = (data) => {
+  let onAddTask = async (data) => {
     console.log(data);
+    let userTaskData = { ...data, userId };
+    try {
+      let res = await axios.post(
+        "http://localhost:3000/addtask",
+        userTaskData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -467,9 +458,9 @@ const Dashboard = () => {
       >
         <div className="p-14">
           <div className="flex justify-between items-center mb-7">
-            <p className="font-semibold flex flex-col">
-              <span>Add New Task</span>
-              <span className="w-20 border-1 border-[#f24e1e]"></span>
+            <p className="font-semibold flex flex-col text-xl">
+              <span>Add Task</span>
+              <span className="w-12 border-1 border-[#f24e1e]"></span>
             </p>
             <button
               type="button"
@@ -477,8 +468,6 @@ const Dashboard = () => {
               onClick={() => {
                 reset();
                 setAddTaskModel(false);
-                // setTaskImage("");
-                // setTaskImgErr("");
               }}
             >
               Go Back
@@ -517,7 +506,7 @@ const Dashboard = () => {
               <input
                 type="date"
                 id="taskdate"
-                className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
+                className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
                 {...register("taskdate", {
                   required: {
                     value: true,
@@ -613,8 +602,9 @@ const Dashboard = () => {
             </div>
 
             {/* Description and Image */}
-            <div className="flex gap-10 mb-7">
-              <div className="flex flex-col mb-2">
+            <div className="flex justify-between gap-10 mb-7">
+              {/* Task descripttion */}
+              <div className="flex flex-col">
                 <label htmlFor="curpwd" className="font-semibold mb-1">
                   Task Description
                 </label>
@@ -636,34 +626,30 @@ const Dashboard = () => {
                   <small className="opacity-0">Test</small>
                 )}
               </div>
-
-              <div>
+              {/* Drag and drop component */}
+              <div className="w-full flex flex-col gap-0 flex-1">
                 <Controller
                   name="taskimage"
                   control={control}
                   rules={{
                     required: {
-                      value: true,
-                      message: "Task Image is required.",
+                      value: false,
+                      // message: "Task Image is required.",
                     },
-                    validate: {
-                      sizeLessthan5MB: (file) => {
-                        if (file && file.length > 0 && file[0].size > 5000000) {
-                          // Return the error message string
-                          return "image size must be less than 5 MB";
-                        }
-                        // Otherwise, validation passes
-                        return true;
-                      },
-                    },
+                    // validate: {
+                    //   sizeLessthan5MB: (file) => {
+                    //     if (file && file.length > 0 && file[0].size > 5000000) {
+                    //       return "image size must be less than 5 MB";
+                    //     }
+                    //     return true;
+                    //   },
+                    // },
                   }}
                   render={({
                     field: { onChange, onBlur, value, name, ref },
                   }) => {
                     const onDrop = useCallback(
                       (acceptedFiles) => {
-                        console.log(acceptedFiles);
-                        console.log(value);
                         // Update React Hook Form's state with the accepted files
                         onChange(acceptedFiles);
                       },
@@ -673,15 +659,10 @@ const Dashboard = () => {
                     const { getRootProps, getInputProps, isDragActive } =
                       useDropzone({
                         onDrop,
-                        // accept: {
-                        //   "image/jpeg": [".jpeg", ".jpg"],
-                        //   "image/png": [".png"],
-                        //   "image/webp": [".webp"],
-                        // },
                       });
 
                     return (
-                      <div className="flex flex-col mb-2 w-full">
+                      <div className="flex flex-col w-full h-full">
                         <label htmlFor="curpwd" className="font-semibold mb-1">
                           Upload Image
                         </label>
@@ -711,10 +692,9 @@ const Dashboard = () => {
                                   </label>
                                 </div>
 
-                                {/* Display validation error */}
-
+                                {/* Display file name */}
                                 {value && value.length > 0 ? (
-                                  <div className="flex items-center gap-1 text-[#f24e1e]">
+                                  <div className="flex items-center gap-1 text-blue-600">
                                     <small>File:</small>
                                     <small>{`${value[0].name.substring(
                                       0,
@@ -732,6 +712,7 @@ const Dashboard = () => {
                     );
                   }}
                 />
+
                 {errors.taskimage ? (
                   <small className="text-red-500">
                     {errors.taskimage.message}
