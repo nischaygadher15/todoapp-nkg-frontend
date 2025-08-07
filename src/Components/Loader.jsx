@@ -5,7 +5,7 @@ const Loader = () => {
   return (
     <div
       className="fixed inset-0 flex justify-center items-center 
-    bg-[rgba(255,255,255,0.7)] z-50"
+    bg-[rgba(255,255,255,0.7)] z-[9999]"
     >
       <img src={loader} alt="Loader SVG" />
     </div>

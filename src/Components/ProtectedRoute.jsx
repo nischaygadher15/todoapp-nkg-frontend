@@ -49,7 +49,7 @@ const ProtectedRoute = ({ children }) => {
           console.log(error);
           clearUserData();
           if (error.response && error.response.status != 401) {
-            toast.error(error.ressponse.data.message);
+            toast.error(error.response.data.message);
           } else {
             toast.error(error.message);
           }
@@ -68,7 +68,7 @@ const ProtectedRoute = ({ children }) => {
   if (loading) return <Loader />;
 
   if (!auth) {
-    console.log("Redirected to /login");
+    // console.log("Redirected to /login");
     return <Navigate to="/login" replace />;
   }
 

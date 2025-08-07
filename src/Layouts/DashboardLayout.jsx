@@ -14,6 +14,7 @@ import { IoArrowUndoSharp } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { updateToken } from "../Redux/tokenSclice";
 import { toast } from "react-toastify";
+import { setAuth, setUser } from "../Redux/userSlice";
 
 const DashboardLayout = ({ dashTitle, children }) => {
   let dispatch = useDispatch();
@@ -39,10 +40,16 @@ const DashboardLayout = ({ dashTitle, children }) => {
     setAnchorEl(null);
   };
 
-  let handleLogout = () => {
+  let clearUserData = () => {
     dispatch(updateToken(null));
+    dispatch(setUser(null));
+    dispatch(setAuth(false));
     sessionStorage.removeItem("todoToken");
-    sessionStorage.removeItem("todoToken");
+    sessionStorage.removeItem("todoUser");
+  };
+
+  let handleLogout = () => {
+    clearUserData();
     navigateVar("/login");
     toast.success("You have successfully logged out.");
   };

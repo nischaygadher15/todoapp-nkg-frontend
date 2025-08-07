@@ -18,16 +18,20 @@ import TaskCard2 from "../Components/TaskCard2";
 import { GoDotFill } from "react-icons/go";
 import { LuImageUp } from "react-icons/lu";
 import { useDropzone } from "react-dropzone";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
+import { setUser } from "../Redux/userSlice";
+import { setIsLoading } from "../Redux/loaderSlice";
+import _ from "lodash";
 
 const Dashboard = () => {
-  let username = useSelector((state) => state.user.data.username);
-  let userId = useSelector((state) => state.user.data._id);
+  let dispatch = useDispatch();
+  let userData = useSelector((state) => state.user.data);
   let token =
     useSelector((state) => state.tokenBucket.token) ??
     sessionStorage.getItem("todoToken");
+  let loading = useSelector((state) => state.loader.isLoading);
   let [inviteModel, setInviteModel] = useState(false);
   let [addTaskModel, setAddTaskModel] = useState(false);
 
@@ -89,7 +93,32 @@ const Dashboard = () => {
   let todoCard1 = todoCards.slice(0, 4);
   let todoCard2 = todoCards.slice(0, 2);
 
-  let fetchTasks = () => {};
+  let fetchTasks = async () => {
+    dispatch(setIsLoading(true));
+    try {
+      let { data } = await axios.get(
+        `http://localhost:3000/gettask/${userData._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(data.user);
+      if (!_.isEqual(data.user, userData)) {
+        dispatch(setUser(data.user));
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      dispatch(setIsLoading(false));
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, [userData]);
 
   let {
     register,
@@ -105,22 +134,23 @@ const Dashboard = () => {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
   }
   let onAddTask = async (data) => {
-    console.log(data);
-    let userTaskData = { ...data, userId };
+    dispatch(setIsLoading(true));
     try {
-      let res = await axios.post(
-        "http://localhost:3000/addtask",
-        userTaskData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let res = await axios.post("http://localhost:3000/addtask", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       console.log(res.data);
+      if (res.data.updatedUser) {
+        setAddTaskModel(false);
+        await fetchTasks();
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      dispatch(setIsLoading(false));
     }
   };
 
@@ -129,7 +159,7 @@ const Dashboard = () => {
       {/* <===============  Head Lines of Dashboard  ==============>*/}
       <div className="flex items-center justify-between mb-8">
         <p className=" lg:text-[26px] xl:text-4xl font-semibold capitalize">
-          Welcome Back, {username} &#128591;
+          Welcome Back, {userData.username} &#128591;
         </p>
         <div className="flex items-center gap-5">
           <ul className="flex items-center gap-1">
@@ -204,17 +234,17 @@ const Dashboard = () => {
 
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
           <ul className="flex flex-col gap-y-3 px-2">
-            {todoCard1.map((cd, inx) => {
+            {userData.tasks.map((tsk, inx) => {
               return (
                 <li key={`todoCard-${inx}`}>
                   <TaskCard1
                     cardData={{
-                      cardStatus: cd.cardStatus,
-                      cardTitle: cd.cardTitle,
-                      cardDesc: cd.cardDesc,
-                      cardPripority: cd.cardPripority,
-                      createdOn: cd.createdOn,
-                      cardImage: cd.cardImage,
+                      cardStatus: tsk.status,
+                      cardTitle: tsk.tasktitle,
+                      cardDesc: tsk.taskdesc,
+                      cardPriority: tsk.priority,
+                      createdOn: tsk.createdAt,
+                      cardImage: tsk?.taskimage,
                     }}
                   />
                 </li>
@@ -683,13 +713,12 @@ const Dashboard = () => {
                               {/* <p className="text-sm text-center">or</p> */}
                               <div className="relative flex flex-col justify-center">
                                 <div className="flex justify-center">
-                                  <label
+                                  <button
                                     type="button"
-                                    htmlFor="taskImage"
                                     className="py-1 px-3 mb-1 border border-[#A1A3AB] text-sm text-[#A1A3AB] bg-transparent flex items-center gap-1 rounded-lg cursor-pointer hover:bg-[#A1A3AB] hover:text-white"
                                   >
                                     Browse
-                                  </label>
+                                  </button>
                                 </div>
 
                                 {/* Display file name */}

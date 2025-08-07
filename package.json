@@ -20,6 +20,7 @@
     "axios": "^1.10.0",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
+    "lodash": "^4.17.21",
     "react": "^19.1.0",
     "react-circular-progressbar": "^2.2.0",
     "react-datepicker": "^8.4.0",

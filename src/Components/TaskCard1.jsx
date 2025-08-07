@@ -2,6 +2,7 @@ import { Menu, MenuItem } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PiDotsThreeOutlineLight } from "react-icons/pi";
 import card1 from "../assets/krishna1.jpg";
+import { FaRegImage } from "react-icons/fa6";
 
 const TaskCard1 = ({ cardData }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -70,15 +71,23 @@ const TaskCard1 = ({ cardData }) => {
             </p>
           </div>
           <div className="">
-            <img
-              src={cardData.cardImage}
-              alt="Card Image"
-              className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
-            />
+            {cardData.cardImage ? (
+              <>
+                <img
+                  src={cardData.cardImage}
+                  alt="Card Image"
+                  className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
+                />
+              </>
+            ) : (
+              <>
+                <FaRegImage className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl text-[#A1A3AB]" />
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between gap-2 text-[11px]">
-          <p>Priority: {cardData.cardPripority}</p>
+          <p>Priority: {cardData.cardPriority}</p>
           <p>
             Status:{" "}
             <span
