@@ -1,14 +1,11 @@
 import React from "react";
+import logo from "../assets/logo/check-mark-button-svgrepo-com (1).svg";
 
 const Help = () => {
   return (
     <div className="mx-10 xl:mx-18 border border-[#A1A3AB] h-full rounded-2xl p-5">
       <div className="flex justify-center items-center gap-3 mb-10">
-        <img
-          src="./src/assets/checkFavicaon.svg"
-          alt="Check SVG"
-          className="w-10 h-10"
-        />
+        <img src={logo} alt="Check SVG" className="w-10 h-10" />
         <p className="text-center text-4xl">
           <span className="font-semibold text-[#FF6767]">To-</span>
           Do

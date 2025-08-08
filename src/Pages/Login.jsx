@@ -47,8 +47,13 @@ const Login = () => {
         dispatch(setAuth(true));
         sessionStorage.setItem("todoToken", data.token);
         sessionStorage.setItem("todoUser", data.data);
-        navigate("/dashboard");
-        toast.success(data.message);
+        navigate("/dashboard", {
+          state: {
+            isLoggedinRightNow: true,
+            message: data.message,
+          },
+        });
+        // toast.success(data.message)
       } else {
         toast.error("Somthing is wrong");
       }

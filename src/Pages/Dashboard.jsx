@@ -1,5 +1,5 @@
 import { Avatar, Button, Dialog } from "@mui/material";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import matsya from "../assets/Matsya.JPG";
 import kurma from "../assets/Kurma.JPG";
 import varah from "../assets/Varah.JPG";
@@ -24,15 +24,33 @@ import axios from "axios";
 import { setUser } from "../Redux/userSlice";
 import { setIsLoading } from "../Redux/loaderSlice";
 import _ from "lodash";
+import { toast } from "react-toastify";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   let dispatch = useDispatch();
+  let location = useLocation();
+  let navigate = useNavigate();
   let userData = useSelector((state) => state.user.data);
   let token =
     useSelector((state) => state.tokenBucket.token) ??
     sessionStorage.getItem("todoToken");
   let [inviteModel, setInviteModel] = useState(false);
   let [addTaskModel, setAddTaskModel] = useState(false);
+  let [editTask, setEditTask] = useState(false);
+  const toastShown = useRef(false);
+
+  useEffect(() => {
+    if (
+      location.state &&
+      location.state.isLoggedinRightNow &&
+      !toastShown.current
+    ) {
+      toast.success(location.state.message);
+      toastShown.current = true;
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   let dashavatar = [matsya, kurma, varah, vaman];
 
@@ -95,15 +113,12 @@ const Dashboard = () => {
   let fetchTasks = async () => {
     dispatch(setIsLoading(true));
     try {
-      let { data } = await axios.get(
-        `http://localhost:3000/gettask/${userData._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(data.user);
+      let { data } = await axios.get(`http://localhost:3000/gettask/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // console.log(data.user);
       if (!_.isEqual(data.user, userData)) {
         dispatch(setUser(data.user));
       }
@@ -133,24 +148,25 @@ const Dashboard = () => {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
   }
   let onAddTask = async (data) => {
-    dispatch(setIsLoading(true));
-    try {
-      let res = await axios.post("http://localhost:3000/addtask", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    console.log(editTask);
+    // dispatch(setIsLoading(true));
+    // try {
+    //   let res = await axios.post("http://localhost:3000/addtask", data, {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   });
 
-      console.log(res.data);
-      if (res.data.updatedUser) {
-        setAddTaskModel(false);
-        await fetchTasks();
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      dispatch(setIsLoading(false));
-    }
+    //   console.log(res.data);
+    //   if (res.data.updatedUser) {
+    //     setAddTaskModel(false);
+    //     await fetchTasks();
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    // } finally {
+    //   dispatch(setIsLoading(false));
+    // }
   };
 
   return (
@@ -246,6 +262,9 @@ const Dashboard = () => {
                       createdOn: tsk.createdAt,
                       cardImage: tsk?.taskimage,
                     }}
+                    editTaskModel={addTaskModel}
+                    setEditTaskModel={setAddTaskModel}
+                    setEditFormValues={setValue}
                   />
                 </li>
               );
@@ -489,7 +508,7 @@ const Dashboard = () => {
         <div className="p-14">
           <div className="flex justify-between items-center mb-7">
             <p className="font-semibold flex flex-col text-xl">
-              <span>Add Task</span>
+              <span>{editTask ? "Edit Task" : "Add Task"}</span>
               <span className="w-12 border-1 border-[#f24e1e]"></span>
             </p>
             <button
@@ -497,6 +516,7 @@ const Dashboard = () => {
               className="font-semibold text-sm underline underline-offset-2 cursor-pointer"
               onClick={() => {
                 reset();
+                if (editTask) setEditTask(false);
                 setAddTaskModel(false);
               }}
             >
@@ -507,6 +527,7 @@ const Dashboard = () => {
           <form
             className="border border-[#b9b9b9] p-5 mb-10"
             onSubmit={handleSubmit(onAddTask)}
+            id="addTaskForm"
           >
             {/* Title */}
             <div className="flex flex-col mb-2">

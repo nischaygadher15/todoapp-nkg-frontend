@@ -4,14 +4,22 @@ import { PiDotsThreeOutlineLight } from "react-icons/pi";
 import card1 from "../assets/krishna1.jpg";
 import { FaRegImage } from "react-icons/fa6";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setIsLoading } from "../Redux/loaderSlice";
 
-const TaskCard1 = ({ cardData }) => {
+const TaskCard1 = ({
+  cardData,
+  editTaskModel,
+  setEditTaskModel,
+  setEditFormValues,
+}) => {
+  let dispatch = useDispatch();
   let token =
     useSelector((state) => state.tokenBucket.token) ??
     sessionStorage.getItem("todoToken");
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  let [taskData, settaskData] = useState([]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -23,6 +31,8 @@ const TaskCard1 = ({ cardData }) => {
 
   const handleEdit = async () => {
     setAnchorEl(null);
+    dispatch(setIsLoading(true));
+
     try {
       let { data } = await axios.get(
         `http://localhost:3000/gettask/${cardData.cardId}`,
@@ -32,11 +42,26 @@ const TaskCard1 = ({ cardData }) => {
           },
         }
       );
-      console.log(data);
+      // console.log(data);
+      settaskData(data);
+      setEditTaskModel(true);
     } catch (error) {
       console.log(error);
+      dispatch(setIsLoading(false));
     }
   };
+
+  useEffect(() => {
+    let editFormVal = ["tasktitle", "taskdate", "priority", "taskdesc"];
+
+    if (taskData && editTaskModel) {
+      for (let val of editFormVal) {
+        // console.log(val, taskData.task[val]);
+        setEditFormValues(val, taskData.task[val]);
+      }
+      dispatch(setIsLoading(false));
+    }
+  }, [taskData, setEditFormValues]);
 
   return (
     <div className="relative border border-[#A1A3AB] rounded-xl min-h-24 p-3.5">
