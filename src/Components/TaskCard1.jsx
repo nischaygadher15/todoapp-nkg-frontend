@@ -25,6 +25,7 @@ const TaskCard1 = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   let [taskData, settaskData] = useState([]);
+
   let dateFormatOptions = {
     day: "2-digit",
     month: "2-digit",
@@ -69,7 +70,6 @@ const TaskCard1 = ({
       setEditTaskModel(true);
     } catch (error) {
       console.log(error);
-      console.log(error.response && error.response.status == 401);
       if (error.response && error.response.status == 401) {
         clearUserData();
         toast.error(error.response.data.message);
@@ -108,7 +108,6 @@ const TaskCard1 = ({
       await fetchTasksMethod();
     } catch (error) {
       console.log(error);
-      console.log(error.response && error.response.status == 401);
       if (error.response && error.response.status == 401) {
         clearUserData();
         toast.error(error.response.data.message);
@@ -143,8 +142,48 @@ const TaskCard1 = ({
       }
     } catch (error) {
       console.log(error);
+      if (error.response && error.response.status == 401) {
+        clearUserData();
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
+      dispatch(setIsLoading(false));
+    }
+  };
 
-      console.log(error.response && error.response.status == 401);
+  const handleFinish = async () => {
+    setAnchorEl(null);
+    dispatch(setIsLoading(true));
+    let res;
+    let date = new Date();
+    let completedDate = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}T${String(
+      date.getHours()
+    ).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+
+    try {
+      res = await axios.put(
+        `http://localhost:3000/finishtask/${cardData.cardId}`,
+        {
+          completedOn: completedDate,
+          status: "completed",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log(res.data);
+      if (res.data.success) {
+        await fetchTasksMethod();
+        dispatch(setIsLoading(false));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
       if (error.response && error.response.status == 401) {
         clearUserData();
         toast.error(error.response.data.message);
@@ -186,7 +225,7 @@ const TaskCard1 = ({
           <MenuItem onClick={handleVital}>Vital</MenuItem>
           <MenuItem onClick={handleEdit}>Edit</MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
-          <MenuItem onClick={handleClose}>Finish</MenuItem>
+          <MenuItem onClick={handleFinish}>Finish</MenuItem>
         </Menu>
       </div>
 

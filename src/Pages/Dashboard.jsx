@@ -21,11 +21,12 @@ import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
-import { setUser } from "../Redux/userSlice";
+import { setAuth, setUser } from "../Redux/userSlice";
 import { setIsLoading } from "../Redux/loaderSlice";
 import _ from "lodash";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
+import { updateToken } from "../Redux/tokenSclice";
 
 const Dashboard = () => {
   let dispatch = useDispatch();
@@ -43,6 +44,7 @@ const Dashboard = () => {
   });
   const toastShown = useRef(false);
   let [completedTask, setCompletedTask] = useState([]);
+  let [notCompletedTask, setNotCompletedTask] = useState([]);
 
   // Successful Login toast after first login
   useEffect(() => {
@@ -62,59 +64,13 @@ const Dashboard = () => {
   // Invote Model close function
   let handleClose = () => setInviteModel(false);
 
-  let todoCards = [
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 1",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "In Progress",
-      cardTitle: "Jay Shree Ram 2",
-      cardDesc: `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vitae error sequi excepturi quisquam aut obcaecati. Repellat placeat qui temporibus adipisci quod cupiditate! Consequatur quasi obcaecati optio aperiam libero culpa numquam!Provident nobis quam pariatur numquam voluptatum, illo quae tempora sequi id voluptas quidem. Laborum temporibus dolocorporis.`,
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "In Progress",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-  ];
-
-  let todoCard1 = todoCards.slice(0, 4);
-  let todoCard2 = todoCards.slice(0, 2);
+  let clearUserData = () => {
+    dispatch(updateToken(null));
+    dispatch(setUser(null));
+    dispatch(setAuth(false));
+    sessionStorage.removeItem("todoToken");
+    sessionStorage.removeItem("todoUser");
+  };
 
   // Get task method to fetch
   let fetchTasks = async () => {
@@ -131,7 +87,12 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      if (error.response && error.response.status == 401) {
+        clearUserData();
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
     } finally {
       dispatch(setIsLoading(false));
     }
@@ -139,11 +100,20 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchTasks();
+
+    //Filter all completed tasks
     completedTask = userData.tasks.filter((tsk) => {
       if (tsk.completedOn) return true;
       else return false;
     });
     setCompletedTask([...completedTask]);
+
+    //Filter all not started/in progress tasks
+    notCompletedTask = userData.tasks.filter((tsk) => {
+      if (tsk.completedOn && tsk.status == "completed") return false;
+      else return true;
+    });
+    setNotCompletedTask([...notCompletedTask]);
   }, [userData]);
 
   // React hook for for add task form
@@ -193,9 +163,14 @@ const Dashboard = () => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      dispatch(setIsLoading(false));
       console.log(error);
-      toast.error(error.message);
+      if (error.response && error.response.status == 401) {
+        clearUserData();
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
+      dispatch(setIsLoading(false));
     }
   };
 
@@ -287,7 +262,7 @@ const Dashboard = () => {
           <ul className="flex flex-1 flex-col gap-y-3 px-2">
             {userData.tasks.length > 0 ? (
               <>
-                {userData.tasks.map((tsk, inx) => {
+                {notCompletedTask.map((tsk, inx) => {
                   return (
                     <li key={`todoCard-${inx}`}>
                       <TaskCard1

@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateToken } from "../Redux/tokenSclice";
 import { toast } from "react-toastify";
 import { setAuth, setUser } from "../Redux/userSlice";
+import ScrollToTop from "../Components/ScrollToTop";
 
 const DashboardLayout = ({ dashTitle, children }) => {
   let dispatch = useDispatch();
@@ -56,6 +57,7 @@ const DashboardLayout = ({ dashTitle, children }) => {
 
   return (
     <div className="relative w-full h-full">
+      <ScrollToTop />
       {/* Navbar */}
       <header
         className="z-99 fixed top-0 left-0 right-0 flex justify-between items-center bg-[#F8F8F8] py-5 

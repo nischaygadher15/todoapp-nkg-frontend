@@ -2,13 +2,28 @@ import { Menu, MenuItem } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { PiDotsThreeOutlineLight } from "react-icons/pi";
 import card1 from "../assets/krishna1.jpg";
+import { FaRegImage } from "react-icons/fa6";
 
 const TaskCard2 = ({ cardData }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  let dateFormatOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  };
+  let completedDate = new Intl.DateTimeFormat(
+    "en-GB",
+    dateFormatOptions
+  ).format(new Date(cardData.completedOn));
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -18,7 +33,7 @@ const TaskCard2 = ({ cardData }) => {
       {/* <==================Task Card===================> */}
 
       {/* Three Dot Menu */}
-      <div>
+      {/* <div>
         <button
           id="basic-button"
           aria-controls={open ? "basic-menu" : undefined}
@@ -45,7 +60,7 @@ const TaskCard2 = ({ cardData }) => {
           <MenuItem onClick={handleClose}>My account</MenuItem>
           <MenuItem onClick={handleClose}>Logout</MenuItem>
         </Menu>
-      </div>
+      </div> */}
 
       {/* Content */}
       <div className="ms-5 me-3">
@@ -70,15 +85,23 @@ const TaskCard2 = ({ cardData }) => {
             </p>
           </div>
           <div className="">
-            <img
-              src={cardData.cardImage}
-              alt="Card Image"
-              className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
-            />
+            {cardData.cardImage != "no image" ? (
+              <>
+                <img
+                  src={cardData.cardImage}
+                  alt="Card Image"
+                  className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
+                />
+              </>
+            ) : (
+              <>
+                <FaRegImage className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl text-[#A1A3AB]" />
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between text-[11px]">
-          <p className="text-[#747474]">Completed on: {cardData.completedOn}</p>
+          <p className="text-[#747474]">Completed on: {completedDate}</p>
         </div>
       </div>
     </div>
