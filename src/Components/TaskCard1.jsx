@@ -13,7 +13,6 @@ import { toast } from "react-toastify";
 const TaskCard1 = ({
   cardData,
   fetchTasksMethod,
-  editTaskFlag,
   setEditTaskFlag,
   editTaskModel,
   setEditTaskModel,
@@ -31,14 +30,6 @@ const TaskCard1 = ({
     month: "2-digit",
     year: "numeric",
   };
-
-  // let taskDateFormat = {
-  //   day: "2-digit",
-  //   month: "2-digit",
-  //   year: "numeric",
-  //   hour: "2-digit",
-  //   minute: "2-digit",
-  // };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -78,9 +69,9 @@ const TaskCard1 = ({
       setEditTaskModel(true);
     } catch (error) {
       console.log(error);
-      clearUserData();
       console.log(error.response && error.response.status == 401);
       if (error.response && error.response.status == 401) {
+        clearUserData();
         toast.error(error.response.data.message);
       } else {
         toast.error(error.message);
@@ -113,18 +104,53 @@ const TaskCard1 = ({
           },
         }
       );
-      console.log(data);
+      // console.log(data);
       await fetchTasksMethod();
     } catch (error) {
       console.log(error);
-      clearUserData();
       console.log(error.response && error.response.status == 401);
       if (error.response && error.response.status == 401) {
+        clearUserData();
         toast.error(error.response.data.message);
       } else {
         toast.error(error.message);
       }
     } finally {
+      dispatch(setIsLoading(false));
+    }
+  };
+
+  const handleVital = async () => {
+    setAnchorEl(null);
+    dispatch(setIsLoading(true));
+    let res;
+
+    try {
+      res = await axios.put(
+        `http://localhost:3000/markvital/${cardData.cardId}`,
+        { isVitalTask: true },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log(res.data);
+      if (res.data.success) {
+        await fetchTasksMethod();
+        dispatch(setIsLoading(false));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+
+      console.log(error.response && error.response.status == 401);
+      if (error.response && error.response.status == 401) {
+        clearUserData();
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
       dispatch(setIsLoading(false));
     }
   };
@@ -157,7 +183,7 @@ const TaskCard1 = ({
             },
           }}
         >
-          <MenuItem onClick={handleClose}>Mark Vital</MenuItem>
+          <MenuItem onClick={handleVital}>Vital</MenuItem>
           <MenuItem onClick={handleEdit}>Edit</MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
           <MenuItem onClick={handleClose}>Finish</MenuItem>

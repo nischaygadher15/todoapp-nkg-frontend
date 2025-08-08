@@ -42,6 +42,7 @@ const Dashboard = () => {
     id: null,
   });
   const toastShown = useRef(false);
+  let [completedTask, setCompletedTask] = useState([]);
 
   // Successful Login toast after first login
   useEffect(() => {
@@ -138,6 +139,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchTasks();
+    completedTask = userData.tasks.filter((tsk) => {
+      if (tsk.completedOn) return true;
+      else return false;
+    });
+    setCompletedTask([...completedTask]);
   }, [userData]);
 
   // React hook for for add task form
@@ -295,7 +301,6 @@ const Dashboard = () => {
                           cardImage: tsk.taskimage,
                         }}
                         fetchTasksMethod={fetchTasks}
-                        editTaskFlag={editTask}
                         setEditTaskFlag={setEditTask}
                         editTaskModel={addTaskModel}
                         setEditTaskModel={setAddTaskModel}
@@ -438,23 +443,36 @@ const Dashboard = () => {
 
             {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
             <ul className="flex flex-col gap-y-3 px-2">
-              {todoCard2.map((cd, inx) => {
-                return (
-                  <li key={`todoCard2-${inx}`}>
-                    <TaskCard2
-                      cardData={{
-                        cardStatus: "Completed",
-                        cardTitle: "Jay Shree Ram 3",
-                        cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-                        cardPripority: "High",
-                        createdOn: "08/07/2025",
-                        completedOn: "09/07/2025",
-                        cardImage: card1,
-                      }}
-                    />
+              {completedTask.length > 0 ? (
+                <>
+                  {completedTask.map((tsk, inx) => {
+                    return (
+                      <li key={`todoCard2-${inx}`}>
+                        <TaskCard2
+                          cardData={{
+                            cardId: tsk._id,
+                            cardStatus: tsk.status,
+                            cardTitle: tsk.tasktitle,
+                            cardDesc: tsk.taskdesc,
+                            cardPriority: tsk.priority,
+                            createdOn: tsk.createdAt,
+                            cardImage: tsk.taskimage,
+                            completedOn: tsk.completedOn,
+                          }}
+                        />
+                      </li>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  <li>
+                    <p className="font-semibold text-xl text-center">
+                      No Task completed so far.
+                    </p>
                   </li>
-                );
-              })}
+                </>
+              )}
             </ul>
             {/* <================ ToDo Cards ================> */}
           </div>
