@@ -61,8 +61,8 @@ const TaskCard1 = ({
           },
         }
       );
-      // console.log(data);
-      settaskData(data);
+      console.log(data.task);
+      settaskData(data.task);
       setEditTaskFlag({
         flag: true,
         id: cardData.cardId,
@@ -83,11 +83,13 @@ const TaskCard1 = ({
 
   useEffect(() => {
     let editFormVal = ["tasktitle", "taskdate", "priority", "taskdesc"];
+    console.log(new Date(taskData["taskdate"]).toLocaleString());
+    // taskData["taskdate"] = taskData["taskdate"].split(".")[0];
 
     if (taskData && editTaskModel) {
       for (let val of editFormVal) {
         // console.log(val, taskData.task[val]);
-        setEditFormValues(val, taskData.task[val]);
+        setEditFormValues(val, taskData[val]);
       }
       dispatch(setIsLoading(false));
     }
