@@ -6,9 +6,15 @@ import { FaRegImage } from "react-icons/fa6";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsLoading } from "../Redux/loaderSlice";
+import { updateToken } from "../Redux/tokenSclice";
+import { setAuth, setUser } from "../Redux/userSlice";
+import { toast } from "react-toastify";
 
 const TaskCard1 = ({
   cardData,
+  fetchTasksMethod,
+  editTaskFlag,
+  setEditTaskFlag,
   editTaskModel,
   setEditTaskModel,
   setEditFormValues,
@@ -20,6 +26,11 @@ const TaskCard1 = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   let [taskData, settaskData] = useState([]);
+  let dateFormatOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -27,6 +38,14 @@ const TaskCard1 = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  let clearUserData = () => {
+    dispatch(updateToken(null));
+    dispatch(setUser(null));
+    dispatch(setAuth(false));
+    sessionStorage.removeItem("todoToken");
+    sessionStorage.removeItem("todoUser");
   };
 
   const handleEdit = async () => {
@@ -44,9 +63,20 @@ const TaskCard1 = ({
       );
       // console.log(data);
       settaskData(data);
+      setEditTaskFlag({
+        flag: true,
+        id: cardData.cardId,
+      });
       setEditTaskModel(true);
     } catch (error) {
       console.log(error);
+      clearUserData();
+      console.log(error.response && error.response.status == 401);
+      if (error.response && error.response.status == 401) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
       dispatch(setIsLoading(false));
     }
   };
@@ -62,6 +92,35 @@ const TaskCard1 = ({
       dispatch(setIsLoading(false));
     }
   }, [taskData, setEditFormValues]);
+
+  const handleDelete = async () => {
+    setAnchorEl(null);
+    dispatch(setIsLoading(true));
+
+    try {
+      let { data } = await axios.delete(
+        `http://localhost:3000/deletetask/${cardData.cardId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(data);
+      await fetchTasksMethod();
+    } catch (error) {
+      console.log(error);
+      clearUserData();
+      console.log(error.response && error.response.status == 401);
+      if (error.response && error.response.status == 401) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      dispatch(setIsLoading(false));
+    }
+  };
 
   return (
     <div className="relative border border-[#A1A3AB] rounded-xl min-h-24 p-3.5">
@@ -93,7 +152,7 @@ const TaskCard1 = ({
         >
           <MenuItem onClick={handleClose}>Mark Vital</MenuItem>
           <MenuItem onClick={handleEdit}>Edit</MenuItem>
-          <MenuItem onClick={handleClose}>Delete</MenuItem>
+          <MenuItem onClick={handleDelete}>Delete</MenuItem>
           <MenuItem onClick={handleClose}>Finish</MenuItem>
         </Menu>
       </div>
@@ -121,7 +180,7 @@ const TaskCard1 = ({
             </p>
           </div>
           <div className="">
-            {cardData.cardImage ? (
+            {cardData.cardImage != "no image" ? (
               <>
                 <img
                   src={cardData.cardImage}
@@ -150,7 +209,12 @@ const TaskCard1 = ({
               {cardData.cardStatus}
             </span>
           </p>
-          <p className="text-[#747474]">Created on: {cardData.createdOn}</p>
+          <p className="text-[#747474]">
+            Created on:{" "}
+            {new Intl.DateTimeFormat("en-GB", dateFormatOptions).format(
+              new Date(cardData.createdOn)
+            )}
+          </p>
         </div>
       </div>
     </div>

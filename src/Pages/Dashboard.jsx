@@ -37,9 +37,13 @@ const Dashboard = () => {
     sessionStorage.getItem("todoToken");
   let [inviteModel, setInviteModel] = useState(false);
   let [addTaskModel, setAddTaskModel] = useState(false);
-  let [editTask, setEditTask] = useState(false);
+  let [editTask, setEditTask] = useState({
+    flag: false,
+    id: null,
+  });
   const toastShown = useRef(false);
 
+  // Successful Login toast after first login
   useEffect(() => {
     if (
       location.state &&
@@ -54,6 +58,7 @@ const Dashboard = () => {
 
   let dashavatar = [matsya, kurma, varah, vaman];
 
+  // Invote Model close function
   let handleClose = () => setInviteModel(false);
 
   let todoCards = [
@@ -110,6 +115,7 @@ const Dashboard = () => {
   let todoCard1 = todoCards.slice(0, 4);
   let todoCard2 = todoCards.slice(0, 2);
 
+  // Get task method to fetch
   let fetchTasks = async () => {
     dispatch(setIsLoading(true));
     try {
@@ -134,6 +140,7 @@ const Dashboard = () => {
     fetchTasks();
   }, [userData]);
 
+  // React hook for for add task form
   let {
     register,
     handleSubmit,
@@ -148,25 +155,43 @@ const Dashboard = () => {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
   }
   let onAddTask = async (data) => {
-    console.log(editTask);
-    // dispatch(setIsLoading(true));
-    // try {
-    //   let res = await axios.post("http://localhost:3000/addtask", data, {
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //   });
+    console.log("editTask.flag:", editTask.flag);
+    dispatch(setIsLoading(true));
+    let res;
 
-    //   console.log(res.data);
-    //   if (res.data.updatedUser) {
-    //     setAddTaskModel(false);
-    //     await fetchTasks();
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // } finally {
-    //   dispatch(setIsLoading(false));
-    // }
+    try {
+      if (editTask.flag) {
+        res = await axios.put(
+          `http://localhost:3000/edittask/${editTask.id}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("EditResponse:", res.data);
+      } else {
+        res = await axios.post("http://localhost:3000/addtask", data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log("AddTaskResponse:", res.data);
+      }
+      if (res.data.success) {
+        setAddTaskModel(false);
+        await fetchTasks();
+        dispatch(setIsLoading(false));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      dispatch(setIsLoading(false));
+      console.log(error);
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -217,60 +242,81 @@ const Dashboard = () => {
           </Button>
         </div>
       </div>
+      {/* <===============  Head Lines of Dashboard Ends here  ==============>*/}
 
       {/* <===============  Main Dashboard  ==============>*/}
       <div className="border-2 border-[#E3E5EC] p-6 xl:p-7 flex gap-4">
         {/* TodoTask - in Progress/Not Started */}
-        <div className="w-1/2 p-5 xl:p-7 rounded-xl shadow-lg">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <BsClipboardPlus className="text-xl text-[#A6A8B0]" />
-              <span className="text-[#FF6767] font-semibold">To-Do</span>
+        <div className="w-1/2 p-5 xl:p-7 flex flex-col gap-3 rounded-xl shadow-lg">
+          {/* TodoTask - in Progress/Not Started heading */}
+          <div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <BsClipboardPlus className="text-xl text-[#A6A8B0]" />
+                <span className="text-[#FF6767] font-semibold">To-Do</span>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="py-0.5 px-2 flex items-center gap-1 border border-transparent hover:border-[#FF6767] rounded-md"
+                  onClick={() => setAddTaskModel(true)}
+                >
+                  <span className="text-xl text-[#FF6767] font-semibold">
+                    +
+                  </span>
+                  <span className="text-[#A6A8B0]">Add Task</span>
+                </button>
+              </div>
             </div>
-            <div>
-              <button
-                type="button"
-                className="py-0.5 px-2 flex items-center gap-1 border border-transparent hover:border-[#FF6767] rounded-md"
-                onClick={() => setAddTaskModel(true)}
-              >
-                <span className="text-xl text-[#FF6767] font-semibold">+</span>
-                <span className="text-[#A6A8B0]">Add Task</span>
-              </button>
+
+            <div className="flex gap-2">
+              <p>20 June</p> {/*Today's Date*/}
+              <p className="flex items-center text-[#A6A8B0]">
+                <BsDot className="text-lg text-[#A6A8B0]" />
+                <span>Today</span>
+              </p>
             </div>
           </div>
-          <div className="flex gap-2 mb-3">
-            <p>20 June</p> {/*Today's Date*/}
-            <p className="flex items-center text-[#A6A8B0]">
-              <BsDot className="text-lg text-[#A6A8B0]" />
-              <span>Today</span>
-            </p>
-          </div>
-          {/* <===============  Head Lines of Dashboard Ends here  ==============>*/}
 
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
-          <ul className="flex flex-col gap-y-3 px-2">
-            {userData.tasks.map((tsk, inx) => {
-              return (
-                <li key={`todoCard-${inx}`}>
-                  <TaskCard1
-                    cardData={{
-                      cardId: tsk._id,
-                      cardStatus: tsk.status,
-                      cardTitle: tsk.tasktitle,
-                      cardDesc: tsk.taskdesc,
-                      cardPriority: tsk.priority,
-                      createdOn: tsk.createdAt,
-                      cardImage: tsk?.taskimage,
-                    }}
-                    editTaskModel={addTaskModel}
-                    setEditTaskModel={setAddTaskModel}
-                    setEditFormValues={setValue}
-                  />
+          <ul className="flex flex-1 flex-col gap-y-3 px-2">
+            {userData.tasks.length > 0 ? (
+              <>
+                {userData.tasks.map((tsk, inx) => {
+                  return (
+                    <li key={`todoCard-${inx}`}>
+                      <TaskCard1
+                        cardData={{
+                          cardId: tsk._id,
+                          cardStatus: tsk.status,
+                          cardTitle: tsk.tasktitle,
+                          cardDesc: tsk.taskdesc,
+                          cardPriority: tsk.priority,
+                          createdOn: tsk.createdAt,
+                          cardImage: tsk.taskimage,
+                        }}
+                        fetchTasksMethod={fetchTasks}
+                        editTaskFlag={editTask}
+                        setEditTaskFlag={setEditTask}
+                        editTaskModel={addTaskModel}
+                        setEditTaskModel={setAddTaskModel}
+                        setEditFormValues={setValue}
+                      />
+                    </li>
+                  );
+                })}
+              </>
+            ) : (
+              <>
+                <li>
+                  <p className="font-semibold text-xl text-center">
+                    No Task found
+                  </p>
                 </li>
-              );
-            })}
+              </>
+            )}
           </ul>
-          {/* <================ ToDo Cards ================> */}
+          {/* <================ ToDo Cards Ends : Not Started / Inprogress here ================> */}
         </div>
 
         {/* TodoTask - Completed */}
@@ -508,7 +554,7 @@ const Dashboard = () => {
         <div className="p-14">
           <div className="flex justify-between items-center mb-7">
             <p className="font-semibold flex flex-col text-xl">
-              <span>{editTask ? "Edit Task" : "Add Task"}</span>
+              <span>{editTask.flag ? "Edit Task" : "Add Task"}</span>
               <span className="w-12 border-1 border-[#f24e1e]"></span>
             </p>
             <button
@@ -516,7 +562,7 @@ const Dashboard = () => {
               className="font-semibold text-sm underline underline-offset-2 cursor-pointer"
               onClick={() => {
                 reset();
-                if (editTask) setEditTask(false);
+                if (editTask.flag) setEditTask({ ...editTask, flag: false });
                 setAddTaskModel(false);
               }}
             >
@@ -555,7 +601,7 @@ const Dashboard = () => {
                 Date
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 id="taskdate"
                 className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
                 {...register("taskdate", {
@@ -779,7 +825,7 @@ const Dashboard = () => {
                 className="py-1.5 px-10 bg-[#f24e1e] text-white flex items-center gap-1 rounded-sm 
                 cursor-pointer"
               >
-                Add
+                {editTask.flag ? "Edit" : "Add"}
               </button>
             </div>
           </form>

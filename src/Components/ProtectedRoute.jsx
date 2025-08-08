@@ -48,6 +48,7 @@ const ProtectedRoute = ({ children }) => {
         } catch (error) {
           console.log(error);
           clearUserData();
+          console.log(error.response && error.response.status == 401);
           if (error.response && error.response.status == 401) {
             toast.error(error.response.data.message);
           } else {
