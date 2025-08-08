@@ -32,6 +32,14 @@ const TaskCard1 = ({
     year: "numeric",
   };
 
+  // let taskDateFormat = {
+  //   day: "2-digit",
+  //   month: "2-digit",
+  //   year: "numeric",
+  //   hour: "2-digit",
+  //   minute: "2-digit",
+  // };
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -61,7 +69,7 @@ const TaskCard1 = ({
           },
         }
       );
-      console.log(data.task);
+      // console.log(data.task);
       settaskData(data.task);
       setEditTaskFlag({
         flag: true,
@@ -83,12 +91,9 @@ const TaskCard1 = ({
 
   useEffect(() => {
     let editFormVal = ["tasktitle", "taskdate", "priority", "taskdesc"];
-    console.log(new Date(taskData["taskdate"]).toLocaleString());
-    // taskData["taskdate"] = taskData["taskdate"].split(".")[0];
 
     if (taskData && editTaskModel) {
       for (let val of editFormVal) {
-        // console.log(val, taskData.task[val]);
         setEditFormValues(val, taskData[val]);
       }
       dispatch(setIsLoading(false));

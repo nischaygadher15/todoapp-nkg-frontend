@@ -155,7 +155,6 @@ const Dashboard = () => {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
   }
   let onAddTask = async (data) => {
-    console.log("editTask.flag:", editTask.flag);
     dispatch(setIsLoading(true));
     let res;
 
@@ -171,7 +170,7 @@ const Dashboard = () => {
           }
         );
 
-        console.log("EditResponse:", res.data);
+        // console.log("EditResponse:", res.data);
       } else {
         res = await axios.post("http://localhost:3000/addtask", data, {
           headers: {
@@ -179,7 +178,7 @@ const Dashboard = () => {
           },
         });
 
-        console.log("AddTaskResponse:", res.data);
+        // console.log("AddTaskResponse:", res.data);
       }
       if (res.data.success) {
         setAddTaskModel(false);
