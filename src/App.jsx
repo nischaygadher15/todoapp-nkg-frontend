@@ -5,11 +5,13 @@ import { Bounce, ToastContainer } from "react-toastify";
 import Loader from "./Components/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsLoading } from "./Redux/loaderSlice";
+import useApi from "./hooks/useApi";
 
 function App() {
   let loading = useSelector((state) => state.loader.isLoading);
   let dispatch = useDispatch();
   let location = useLocation();
+  const { api } = useApi();
 
   useEffect(() => {
     let loadTimer = setTimeout(() => {

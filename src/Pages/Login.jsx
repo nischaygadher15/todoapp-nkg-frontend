@@ -37,38 +37,30 @@ const Login = () => {
 
   const handleLogin = async (userdata) => {
     // console.log(userdata);
-    loginUser(userdata);
-    // dispatch(setIsLoading(true));
-    // try {
-    //   // let encryUserData = EncryptData(JSON.stringify(data));
-    //   let { data } = await axios.post("http://localhost:3000/login", userdata);
-    //   // console.log(data);
-    //   if (data.token && data.isAuthenticated) {
-    //     dispatch(updateToken(data.token));
-    //     dispatch(setUser(data.data));
-    //     dispatch(setAuth(true));
-    //     sessionStorage.setItem("todoToken", data.token);
-    //     sessionStorage.setItem("todoUser", data.data);
-    //     navigate("/dashboard", {
-    //       state: {
-    //         isLoggedinRightNow: true,
-    //         message: data.message,
-    //       },
-    //     });
-    //     // toast.success(data.message)
-    //   } else {
-    //     toast.error("Somthing is wrong");
-    //   }
-    // } catch (error) {
-    //   dispatch(setIsLoading(false));
-    //   // console.log(error);
-    //   if (error.response && error.response.status == 401) {
-    //     toast.error(error.response.data.message);
-    //   } else {
-    //     toast.error(error.message);
-    //   }
-    //   clearUserData();
-    // }
+    try {
+      // let encryUserData = EncryptData(JSON.stringify(data));
+      let data = await loginUser(userdata);
+      dispatch(setIsLoading(true));
+      // console.log(data);
+      if (data.token && data.isAuthenticated) {
+        dispatch(updateToken(data.token));
+        dispatch(setUser(data.data));
+        dispatch(setAuth(true));
+        sessionStorage.setItem("todoToken", data.token);
+        sessionStorage.setItem("todoUser", data.data);
+        navigate("/dashboard", {
+          state: {
+            isLoggedinRightNow: true,
+            message: data.message,
+          },
+        });
+        // toast.success(data.message)
+      } else {
+        toast.error("Somthing is wrong");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   return (

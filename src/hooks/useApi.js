@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import api, { configureApi } from "../api/utils/api";
+import api, { setApiCallbacks } from "../api/utils/api";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ const useApi = () => {
   let navigate = useNavigate();
 
   useEffect(() => {
-    configureApi({
+    setApiCallbacks({
       onUnauthorized: (msg) => {
         dispatch(updateToken(null));
         dispatch(setUser(null));
