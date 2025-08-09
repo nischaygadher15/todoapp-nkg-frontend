@@ -260,7 +260,7 @@ const DashboardLayout = ({ dashTitle, children }) => {
               <li className="hover:bg-white hover:text-[#FF6767] rounded-xl">
                 <button
                   type="button"
-                  className="px-2.5 py-3 flex gap-3 items-center cursor-pointer"
+                  className="w-full px-2.5 py-3 flex gap-3 items-center cursor-pointer"
                   onClick={handleLogout}
                 >
                   <MdLogout className="text-2xl" />
