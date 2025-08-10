@@ -7,8 +7,10 @@ import TaskCard1 from "../Components/TaskCard1";
 import { GoDotFill } from "react-icons/go";
 import { LuImageUp } from "react-icons/lu";
 import { useDropzone } from "react-dropzone";
+import { useSelector } from "react-redux";
 
 const Mytasks = () => {
+  let userData = useSelector((state) => state.user.data);
   let [addTaskModel, setAddTaskModel] = useState(false);
   let [taskFormData, setTaskFormData] = useState({
     title: "",
@@ -102,6 +104,11 @@ const Mytasks = () => {
     Ipsum, voluptatem aut dolores dicta cumque sapiente qui dolor repellat tenetur architecto omnis libero ea impedit molestias, sint mollitia blanditiis. Fugiat pariatur optio mollitia reprehenderit atque omnis reiciendis voluptate ullam.`,
     taskDeadline: "09/07/2025",
   });
+
+  useEffect(() => {
+    try {
+    } catch (error) {}
+  }, []);
 
   return (
     <div className="px-10 xl:px-18">

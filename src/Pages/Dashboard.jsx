@@ -28,6 +28,12 @@ import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import { updateToken } from "../Redux/tokenSclice";
 import { addTask, getTaskList, updateTask } from "../api/user/user-api";
+import {
+  filterCompltedTask,
+  filterInProgressTask,
+  filterNotCompletedTask,
+  filterNotStartedTask,
+} from "../Components/filters";
 
 const Dashboard = () => {
   let dispatch = useDispatch();
@@ -87,30 +93,18 @@ const Dashboard = () => {
     fetchTasks();
 
     //Filter all completed tasks
-    completedTask = userData.tasks.filter((tsk) => {
-      if (tsk.completedOn) return true;
-      else return false;
-    });
+    completedTask = filterCompltedTask(userData.tasks);
     setCompletedTask([...completedTask]);
 
-    //Filter all not started/in progress tasks
-    notCompletedTask = userData.tasks.filter((tsk) => {
-      if (tsk.completedOn && tsk.status == "completed") return false;
-      else return true;
-    });
+    //Filter all not completed tasks
+    notCompletedTask = filterNotCompletedTask(userData.tasks);
     setNotCompletedTask([...notCompletedTask]);
 
-    //Filter all not in progress tasks
-    let inProgressTask = userData.tasks.filter((tsk) => {
-      if (!tsk.completedOn && tsk.status == "in progress") return true;
-      else return false;
-    });
+    //Filter all in progress tasks
+    let inProgressTask = filterInProgressTask(userData.tasks);
 
-    //Filter all not not started tasks
-    let notStarted = userData.tasks.filter((tsk) => {
-      if (!tsk.completedOn && tsk.status == "not started") return true;
-      else return false;
-    });
+    //Filter all not started tasks
+    let notStarted = filterNotStartedTask(userData.tasks);
 
     setReport({
       completed:
@@ -123,8 +117,6 @@ const Dashboard = () => {
         Math.round((notStarted.length / userData.tasks.length) * 10000) / 100,
     });
   }, [userData]);
-
-  useEffect(() => console.log(report), [report]);
 
   // React hook for for add task form
   let {
