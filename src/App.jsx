@@ -14,11 +14,7 @@ function App() {
   const { api } = useApi();
 
   useEffect(() => {
-    let loadTimer = setTimeout(() => {
-      dispatch(setIsLoading(false));
-    }, 1000);
-
-    return () => clearTimeout(loadTimer);
+    dispatch(setIsLoading(false));
   }, [location.pathname]);
 
   return (

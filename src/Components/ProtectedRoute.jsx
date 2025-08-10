@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Loader from "./Loader";
 import { setUser, setAuth, setLoginLoading } from "../Redux/userSlice.js";
 import { toast } from "react-toastify";
 import { updateToken } from "../Redux/tokenSclice.js";
+import { verifyAuth } from "../api/user/user-api.js";
 
 const ProtectedRoute = ({ children }) => {
   let dispatch = useDispatch();
+  let navigate = useNavigate();
   let token =
     useSelector((state) => state.tokenBucket.token) ??
     sessionStorage.getItem("todoToken");
@@ -21,38 +23,25 @@ const ProtectedRoute = ({ children }) => {
     dispatch(setAuth(false));
     sessionStorage.removeItem("todoToken");
     sessionStorage.removeItem("todoUser");
+    navigate("/login");
   };
 
   useEffect(() => {
     let verifyToken = async () => {
-      dispatch(setLoginLoading(true));
       if (token != null) {
         try {
-          let { data } = await axios.post(
-            "http://localhost:3000/auth",
-            { token },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          // console.log(data);
-          if (data.isAuthenticated) {
-            dispatch(setUser(data.data));
+          let res = await verifyAuth();
+          // console.log("Auth:", res);
+          if (res.isAuthenticated) {
+            dispatch(setUser(res.data));
             dispatch(setAuth(true));
           } else {
             clearUserData();
             toast.error("Something went wrong.");
           }
         } catch (error) {
-          console.log(error);
           clearUserData();
-          if (error.response && error.response.status == 401) {
-            toast.error(error.response.data.message);
-          } else {
-            toast.error(error.message);
-          }
+          console.log(error);
         } finally {
           dispatch(setLoginLoading(false));
         }

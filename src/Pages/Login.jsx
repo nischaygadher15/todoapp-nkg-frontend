@@ -40,7 +40,6 @@ const Login = () => {
     try {
       // let encryUserData = EncryptData(JSON.stringify(data));
       let data = await loginUser(userdata);
-      dispatch(setIsLoading(true));
       // console.log(data);
       if (data.token && data.isAuthenticated) {
         dispatch(updateToken(data.token));

@@ -9,6 +9,12 @@ import { setIsLoading } from "../Redux/loaderSlice";
 import { updateToken } from "../Redux/tokenSclice";
 import { setAuth, setUser } from "../Redux/userSlice";
 import { toast } from "react-toastify";
+import {
+  deleteTaskById,
+  finishTask,
+  getTaskById,
+  vitalTask,
+} from "../api/user/user-api";
 
 const TaskCard1 = ({
   cardData,
@@ -40,27 +46,12 @@ const TaskCard1 = ({
     setAnchorEl(null);
   };
 
-  let clearUserData = () => {
-    dispatch(updateToken(null));
-    dispatch(setUser(null));
-    dispatch(setAuth(false));
-    sessionStorage.removeItem("todoToken");
-    sessionStorage.removeItem("todoUser");
-  };
-
   const handleEdit = async () => {
     setAnchorEl(null);
     dispatch(setIsLoading(true));
 
     try {
-      let { data } = await axios.get(
-        `http://localhost:3000/gettask/${cardData.cardId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let data = await getTaskById(cardData.cardId);
       // console.log(data.task);
       settaskData(data.task);
       setEditTaskFlag({
@@ -70,13 +61,6 @@ const TaskCard1 = ({
       setEditTaskModel(true);
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status == 401) {
-        clearUserData();
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error.message);
-      }
-      dispatch(setIsLoading(false));
     }
   };
 
@@ -94,67 +78,33 @@ const TaskCard1 = ({
   const handleDelete = async () => {
     setAnchorEl(null);
     dispatch(setIsLoading(true));
-
     try {
-      let { data } = await axios.delete(
-        `http://localhost:3000/deletetask/${cardData.cardId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let data = await deleteTaskById(cardData.cardId);
       // console.log(data);
       await fetchTasksMethod();
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status == 401) {
-        clearUserData();
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error.message);
-      }
-    } finally {
-      dispatch(setIsLoading(false));
     }
   };
 
   const handleVital = async () => {
     setAnchorEl(null);
-    dispatch(setIsLoading(true));
     let res;
 
     try {
-      res = await axios.put(
-        `http://localhost:3000/markvital/${cardData.cardId}`,
-        { isVitalTask: true },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log(res.data);
-      if (res.data.success) {
+      res = await vitalTask(cardData.cardId, { isVitalTask: true });
+      // console.log(res);
+      if (res.success) {
         await fetchTasksMethod();
-        dispatch(setIsLoading(false));
-        toast.success(res.data.message);
+        toast.success(res.message);
       }
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status == 401) {
-        clearUserData();
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error.message);
-      }
-      dispatch(setIsLoading(false));
     }
   };
 
   const handleFinish = async () => {
     setAnchorEl(null);
-    dispatch(setIsLoading(true));
     let res;
     let date = new Date();
     let completedDate = `${date.getFullYear()}-${String(
@@ -164,33 +114,17 @@ const TaskCard1 = ({
     ).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 
     try {
-      res = await axios.put(
-        `http://localhost:3000/finishtask/${cardData.cardId}`,
-        {
-          completedOn: completedDate,
-          status: "completed",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log(res.data);
-      if (res.data.success) {
+      res = await finishTask(cardData.cardId, {
+        completedOn: completedDate,
+        status: "completed",
+      });
+      // console.log(res);
+      if (res.success) {
         await fetchTasksMethod();
-        dispatch(setIsLoading(false));
-        toast.success(res.data.message);
+        toast.success(res.message);
       }
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status == 401) {
-        clearUserData();
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error.message);
-      }
-      dispatch(setIsLoading(false));
     }
   };
 

@@ -27,6 +27,7 @@ import _ from "lodash";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import { updateToken } from "../Redux/tokenSclice";
+import { addTask, getTaskList, updateTask } from "../api/user/user-api";
 
 const Dashboard = () => {
   let dispatch = useDispatch();
@@ -64,37 +65,16 @@ const Dashboard = () => {
   // Invote Model close function
   let handleClose = () => setInviteModel(false);
 
-  let clearUserData = () => {
-    dispatch(updateToken(null));
-    dispatch(setUser(null));
-    dispatch(setAuth(false));
-    sessionStorage.removeItem("todoToken");
-    sessionStorage.removeItem("todoUser");
-  };
-
   // Get task method to fetch
   let fetchTasks = async () => {
-    dispatch(setIsLoading(true));
     try {
-      let { data } = await axios.get(`http://localhost:3000/gettask/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      let data = await getTaskList();
       // console.log(data.user);
       if (!_.isEqual(data.user, userData)) {
         dispatch(setUser(data.user));
       }
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status == 401) {
-        clearUserData();
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error.message);
-      }
-    } finally {
-      dispatch(setIsLoading(false));
     }
   };
 
@@ -131,46 +111,24 @@ const Dashboard = () => {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
   }
   let onAddTask = async (data) => {
-    dispatch(setIsLoading(true));
     let res;
 
     try {
       if (editTask.flag) {
-        res = await axios.put(
-          `http://localhost:3000/edittask/${editTask.id}`,
-          data,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        // console.log("EditResponse:", res.data);
+        res = await updateTask(editTask.id, data);
+        // console.log("EditResponse:", res);
       } else {
-        res = await axios.post("http://localhost:3000/addtask", data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // console.log("AddTaskResponse:", res.data);
+        res = await addTask(data);
+        // console.log("AddTaskResponse:", res);
       }
-      if (res.data.success) {
+
+      if (res.success) {
         setAddTaskModel(false);
         await fetchTasks();
-        dispatch(setIsLoading(false));
-        toast.success(res.data.message);
+        toast.success(res.message);
       }
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status == 401) {
-        clearUserData();
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error.message);
-      }
-      dispatch(setIsLoading(false));
     }
   };
 

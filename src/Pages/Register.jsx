@@ -11,7 +11,7 @@ import { useDispatch } from "react-redux";
 import { setIsLoading } from "../Redux/loaderSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import CircularProgress from "@mui/material/CircularProgress";
+import { createUser } from "../api/user/user-api";
 
 const Register = () => {
   let dispatch = useDispatch();
@@ -29,31 +29,19 @@ const Register = () => {
   } = useForm({});
 
   let onSubmit = async (data) => {
-    console.log(data);
+    // console.log(data);
     // let encryptedData = EncryptData(JSON.stringify(data));
-    dispatch(setIsLoading(true));
-
     try {
-      let res = await axios.post("http://localhost:3000/register", {
-        data,
-      });
+      let res = await createUser(data);
       console.log(res);
-      // dispatch(setIsLoading(false));
-      if (res.data.isRegistered) {
+
+      if (res.isRegistered) {
         reset();
         navigate("/login");
         toast.success("You have successfully registered.");
       }
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status != 400) {
-        toast.error(error.response.data.message);
-      } else {
-        console.log(error.response.data.errors);
-        toast.error("somthing went wrong");
-      }
-    } finally {
-      dispatch(setIsLoading(false));
     }
   };
 

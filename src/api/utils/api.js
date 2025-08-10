@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 //This is axios instance we have created
 let api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  // timeout: 5000,
+  timeout: 5000,
 });
 
 // Define default empty callbacks. These will be updated by the React hook.
@@ -46,7 +46,7 @@ api.interceptors.request.use(
 // Axios response interceptors
 api.interceptors.response.use(
   (response) => {
-    _onLoadingChange(false);
+    if (response.config.url != "/login") _onLoadingChange(false);
     // console.log("loading stopped..");
     return response;
   },
