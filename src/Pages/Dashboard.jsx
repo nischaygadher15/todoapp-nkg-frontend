@@ -46,6 +46,11 @@ const Dashboard = () => {
   const toastShown = useRef(false);
   let [completedTask, setCompletedTask] = useState([]);
   let [notCompletedTask, setNotCompletedTask] = useState([]);
+  let [report, setReport] = useState({
+    completed: 0,
+    inProgrss: 0,
+    notStarted: 0,
+  });
 
   // Successful Login toast after first login
   useEffect(() => {
@@ -94,7 +99,32 @@ const Dashboard = () => {
       else return true;
     });
     setNotCompletedTask([...notCompletedTask]);
+
+    //Filter all not in progress tasks
+    let inProgressTask = userData.tasks.filter((tsk) => {
+      if (!tsk.completedOn && tsk.status == "in progress") return true;
+      else return false;
+    });
+
+    //Filter all not not started tasks
+    let notStarted = userData.tasks.filter((tsk) => {
+      if (!tsk.completedOn && tsk.status == "not started") return true;
+      else return false;
+    });
+
+    setReport({
+      completed:
+        Math.round((completedTask.length / userData.tasks.length) * 10000) /
+        100,
+      inProgrss:
+        Math.round((inProgressTask.length / userData.tasks.length) * 10000) /
+        100,
+      notStarted:
+        Math.round((notStarted.length / userData.tasks.length) * 10000) / 100,
+    });
   }, [userData]);
+
+  useEffect(() => console.log(report), [report]);
 
   // React hook for for add task form
   let {
@@ -271,7 +301,7 @@ const Dashboard = () => {
               <div className="inline-flex flex-col items-center">
                 <div className="relative mb-3">
                   <CircularProgressbar
-                    value={84}
+                    value={report.completed}
                     maxValue={100}
                     counterClockwise={true}
                     strokeWidth={11}
@@ -287,8 +317,8 @@ const Dashboard = () => {
                       backgroundColor: "#3e98c7",
                     })}
                   />
-                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold">
-                    84%
+                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold">
+                    {`${report.completed}%`}
                   </p>
                 </div>
                 <p className="flex items-center">
@@ -303,7 +333,7 @@ const Dashboard = () => {
               <div className="inline-flex flex-col">
                 <div className="relative mb-3">
                   <CircularProgressbar
-                    value={46}
+                    value={report.inProgrss}
                     maxValue={100}
                     counterClockwise={true}
                     strokeWidth={11}
@@ -319,8 +349,8 @@ const Dashboard = () => {
                       backgroundColor: "#3e98c7",
                     })}
                   />
-                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold">
-                    46%
+                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold">
+                    {`${report.inProgrss}%`}
                   </p>
                 </div>
                 <p className="flex items-center">
@@ -335,7 +365,7 @@ const Dashboard = () => {
               <div className="inline-flex flex-col">
                 <div className="relative mb-3">
                   <CircularProgressbar
-                    value={13}
+                    value={report.notStarted}
                     maxValue={100}
                     counterClockwise={false}
                     strokeWidth={11}
@@ -351,8 +381,8 @@ const Dashboard = () => {
                       backgroundColor: "#3e98c7",
                     })}
                   />
-                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold">
-                    13%
+                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold">
+                    {`${report.notStarted}%`}
                   </p>
                 </div>
                 <p className="flex items-center">
