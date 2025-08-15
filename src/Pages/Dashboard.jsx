@@ -149,10 +149,8 @@ const Dashboard = () => {
     for (let fl in data) {
       if (fl == "taskimage") {
         formData.append(fl, data[fl][0]);
-        console.log(fl, data[fl][0]);
       } else {
         formData.append(fl, data[fl]);
-        console.log(fl, data[fl]);
       }
     }
 
@@ -164,10 +162,11 @@ const Dashboard = () => {
         res = await addTask(formData);
         // console.log("AddTaskResponse:", res);
       }
-      if (res.success) {
+      if (res.success && res.upload) {
         reset();
         setAddTaskModel(false);
         await fetchTasks();
+        toast.success(res.uploadMessage);
         toast.success(res.message);
       }
     } catch (error) {
@@ -273,7 +272,7 @@ const Dashboard = () => {
                         cardDesc: tsk.taskdesc,
                         cardPriority: tsk.priority,
                         createdOn: tsk.createdAt,
-                        cardImage: tsk.taskimage,
+                        cardImage: tsk.taskimage?.secure_url,
                       }}
                       isVital={true}
                       fetchTasksMethod={fetchTasks}
