@@ -1,17 +1,16 @@
 /* width */
 .myScrollBar::-webkit-scrollbar {
-  width: 7px;
+  width: 5px;
 }
 
 /* Track */
 .myScrollBar::-webkit-scrollbar-track {
-  background: transparent;
+  background: #eeecec;
 }
 
 /* Handle */
 .myScrollBar::-webkit-scrollbar-thumb {
-  /* background: #888; */
-  background: #ffffff;
+  background: #b6b4b4;
   border-radius: 10px;
   padding: 0px 4px;
 }
@@ -19,5 +18,5 @@
 /* Handle on hover */
 .myScrollBar::-webkit-scrollbar-thumb:hover {
   /* background: #555; */
-  background: #f5f3f3;
+  background: #9b9a9a;
 }

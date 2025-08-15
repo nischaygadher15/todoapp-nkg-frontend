@@ -118,6 +118,14 @@ const Dashboard = () => {
     });
   }, [userData]);
 
+  let randomNum = Math.round(Math.random() * 10000);
+  let randomTaskData = {
+    priority: "extreme",
+    taskdate: "2025-08-13T21:24",
+    taskdesc: `Sitaram-${randomNum}`,
+    tasktitle: `Ram-${randomNum}`,
+  };
+
   // React hook for for add task form
   let {
     register,
@@ -127,7 +135,9 @@ const Dashboard = () => {
     setValue,
     reset,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: randomTaskData,
+  });
 
   {
     /* <===============  Add Task Dialog Form handleSubmit  ==============>*/
@@ -135,16 +145,27 @@ const Dashboard = () => {
   let onAddTask = async (data) => {
     let res;
 
+    let formData = new FormData();
+    for (let fl in data) {
+      if (fl == "taskimage") {
+        formData.append(fl, data[fl][0]);
+        console.log(fl, data[fl][0]);
+      } else {
+        formData.append(fl, data[fl]);
+        console.log(fl, data[fl]);
+      }
+    }
+
     try {
       if (editTask.flag) {
-        res = await updateTask(editTask.id, data);
+        res = await updateTask(editTask.id, formData);
         // console.log("EditResponse:", res);
       } else {
-        res = await addTask(data);
+        res = await addTask(formData);
         // console.log("AddTaskResponse:", res);
       }
-
       if (res.success) {
+        reset();
         setAddTaskModel(false);
         await fetchTasks();
         toast.success(res.message);
@@ -205,7 +226,7 @@ const Dashboard = () => {
       {/* <===============  Head Lines of Dashboard Ends here  ==============>*/}
 
       {/* <===============  Main Dashboard  ==============>*/}
-      <div className="border-2 border-[#E3E5EC] p-6 xl:p-7 flex gap-4">
+      <div className="max-h-screen border-2 border-[#E3E5EC] p-6 xl:p-7 flex gap-4">
         {/* TodoTask - in Progress/Not Started */}
         <div className="w-1/2 p-5 xl:p-7 flex flex-col gap-3 rounded-xl shadow-lg">
           {/* TodoTask - in Progress/Not Started heading */}
@@ -239,46 +260,45 @@ const Dashboard = () => {
           </div>
 
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
-          <ul className="flex flex-1 flex-col gap-y-3 px-2">
-            {userData.tasks.length > 0 ? (
-              <>
-                {notCompletedTask.map((tsk, inx) => {
-                  return (
-                    <li key={`todoCard-${inx}`}>
-                      <TaskCard1
-                        cardData={{
-                          cardId: tsk._id,
-                          cardStatus: tsk.status,
-                          cardTitle: tsk.tasktitle,
-                          cardDesc: tsk.taskdesc,
-                          cardPriority: tsk.priority,
-                          createdOn: tsk.createdAt,
-                          cardImage: tsk.taskimage,
-                        }}
-                        fetchTasksMethod={fetchTasks}
-                        setEditTaskFlag={setEditTask}
-                        editTaskModel={addTaskModel}
-                        setEditTaskModel={setAddTaskModel}
-                        setEditFormValues={setValue}
-                      />
-                    </li>
-                  );
-                })}
-              </>
-            ) : (
-              <>
-                <li>
-                  <p className="font-semibold text-xl text-center">
-                    No Task found
-                  </p>
-                </li>
-              </>
-            )}
-          </ul>
-          {/* <================ ToDo Cards Ends : Not Started / Inprogress here ================> */}
+          {notCompletedTask.length > 0 ? (
+            <ul className="myScrollBar flex flex-1 overflow-y-auto flex-col gap-y-3 px-2">
+              {notCompletedTask.map((tsk, inx) => {
+                return (
+                  <li key={`todoCard-${inx}`}>
+                    <TaskCard1
+                      cardData={{
+                        cardId: tsk._id,
+                        cardStatus: tsk.status,
+                        cardTitle: tsk.tasktitle,
+                        cardDesc: tsk.taskdesc,
+                        cardPriority: tsk.priority,
+                        createdOn: tsk.createdAt,
+                        cardImage: tsk.taskimage,
+                      }}
+                      isVital={true}
+                      fetchTasksMethod={fetchTasks}
+                      setEditTaskFlag={setEditTask}
+                      editTaskModel={addTaskModel}
+                      setEditTaskModel={setAddTaskModel}
+                      setEditFormValues={setValue}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <ul className="flex flex-1 flex-col justify-center gap-y-3 px-2">
+              <li>
+                <p className="font-semibold text-xl text-center">
+                  No Task found
+                </p>
+              </li>
+            </ul>
+          )}
         </div>
+        {/* <================ ToDo Cards Ends : Not Started / Inprogress here ================> */}
 
-        {/* TodoTask - Completed */}
+        {/* <================ ToDo Cards starts : Completed ================> */}
         <div className="w-1/2 flex flex-col gap-4">
           {/* Tasks Report */}
           <div className="w-full flex flex-col p-5 xl:p-7 rounded-xl shadow-lg">
@@ -388,7 +408,7 @@ const Dashboard = () => {
           </div>
 
           {/* Completed Tasks */}
-          <div className="w-full flex flex-1 flex-col p-5 xl:p-7 rounded-xl shadow-lg">
+          <div className="w-full flex flex-1 overflow-y-hidden flex-col p-5 xl:p-7 rounded-xl shadow-lg">
             <div className="min-h-8 flex items-center gap-2 mb-7">
               <BsClipboardCheck className="text-xl text-[#A6A8B0]" />
               <span className="text-[#FF6767] font-semibold">
@@ -396,8 +416,8 @@ const Dashboard = () => {
               </span>
             </div>
 
-            {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
-            <ul className="flex flex-col gap-y-3 px-2">
+            {/* <================ ToDo Cards : Completed ================> */}
+            <ul className="myScrollBar flex flex-1 overflow-y-auto flex-col gap-y-3 px-2">
               {completedTask.length > 0 ? (
                 <>
                   {completedTask.map((tsk, inx) => {
@@ -546,6 +566,7 @@ const Dashboard = () => {
             className="border border-[#b9b9b9] p-5 mb-10"
             onSubmit={handleSubmit(onAddTask)}
             id="addTaskForm"
+            encType="multipart/form-data"
           >
             {/* Title */}
             <div className="flex flex-col mb-2">
@@ -695,6 +716,7 @@ const Dashboard = () => {
                   <small className="opacity-0">Test</small>
                 )}
               </div>
+
               {/* Drag and drop component */}
               <div className="w-full flex flex-col gap-0 flex-1">
                 <Controller
@@ -702,17 +724,17 @@ const Dashboard = () => {
                   control={control}
                   rules={{
                     required: {
-                      value: false,
-                      // message: "Task Image is required.",
+                      value: true,
+                      message: "Task Image is required.",
                     },
-                    // validate: {
-                    //   sizeLessthan5MB: (file) => {
-                    //     if (file && file.length > 0 && file[0].size > 5000000) {
-                    //       return "image size must be less than 5 MB";
-                    //     }
-                    //     return true;
-                    //   },
-                    // },
+                    validate: {
+                      sizeLessthan5MB: (file) => {
+                        if (file[0].size > 5000000) {
+                          return "image size must be less than 5 MB";
+                        }
+                        return true;
+                      },
+                    },
                   }}
                   render={({
                     field: { onChange, onBlur, value, name, ref },

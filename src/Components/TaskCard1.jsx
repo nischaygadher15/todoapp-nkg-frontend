@@ -6,8 +6,6 @@ import { FaRegImage } from "react-icons/fa6";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsLoading } from "../Redux/loaderSlice";
-import { updateToken } from "../Redux/tokenSclice";
-import { setAuth, setUser } from "../Redux/userSlice";
 import { toast } from "react-toastify";
 import {
   deleteTaskById,
@@ -17,20 +15,22 @@ import {
 } from "../api/user/user-api";
 
 const TaskCard1 = ({
+  isVital,
   cardData,
+  isActive,
   fetchTasksMethod,
-  setEditTaskFlag,
+  setEditTaskFlag = null,
   editTaskModel,
   setEditTaskModel,
   setEditFormValues,
 }) => {
   let dispatch = useDispatch();
-  let token =
-    useSelector((state) => state.tokenBucket.token) ??
-    sessionStorage.getItem("todoToken");
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   let [taskData, settaskData] = useState([]);
+  let uniqeIdForButton = `${Math.round(Math.random() * 10000)}-${new String(
+    Date.now()
+  ).slice(-5)}`;
 
   let dateFormatOptions = {
     day: "2-digit",
@@ -39,14 +39,17 @@ const TaskCard1 = ({
   };
 
   const handleClick = (event) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClose = (event) => {
+    event.stopPropagation();
     setAnchorEl(null);
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (event) => {
+    event.stopPropagation();
     setAnchorEl(null);
     dispatch(setIsLoading(true));
 
@@ -54,10 +57,12 @@ const TaskCard1 = ({
       let data = await getTaskById(cardData.cardId);
       // console.log(data.task);
       settaskData(data.task);
+
       setEditTaskFlag({
         flag: true,
         id: cardData.cardId,
       });
+
       setEditTaskModel(true);
     } catch (error) {
       console.log(error);
@@ -75,7 +80,8 @@ const TaskCard1 = ({
     }
   }, [taskData, setEditFormValues]);
 
-  const handleDelete = async () => {
+  const handleDelete = async (event) => {
+    event.stopPropagation();
     setAnchorEl(null);
     dispatch(setIsLoading(true));
     try {
@@ -87,12 +93,15 @@ const TaskCard1 = ({
     }
   };
 
-  const handleVital = async () => {
+  const handleVital = async (event) => {
+    event.stopPropagation();
     setAnchorEl(null);
     let res;
 
     try {
-      res = await vitalTask(cardData.cardId, { isVitalTask: true });
+      res = await vitalTask(cardData.cardId, {
+        isVitalTask: isVital ? true : false,
+      });
       // console.log(res);
       if (res.success) {
         await fetchTasksMethod();
@@ -103,7 +112,8 @@ const TaskCard1 = ({
     }
   };
 
-  const handleFinish = async () => {
+  const handleFinish = async (event) => {
+    event.stopPropagation();
     setAnchorEl(null);
     let res;
     let date = new Date();
@@ -128,35 +138,55 @@ const TaskCard1 = ({
     }
   };
 
+  let getCardRingTheme = (status) => {
+    if (status == "completed") return "border-[#05a301]";
+    else if (status == "in progress") return "border-[#0225ff]";
+    else return "border-[#f21e1e]";
+  };
+
+  let getCardStatusTheme = (status) => {
+    if (status == "completed") return "text-[#05a301]";
+    else if (status == "in progress") return "text-[#0225ff]";
+    else return "text-[#f21e1e]";
+  };
+
   return (
-    <div className="relative border border-[#A1A3AB] rounded-xl min-h-24 p-3.5">
+    // <div className="relative border border-[#A1A3AB] rounded-xl min-h-24 p-3.5">
+    <div
+      className={`relative ${
+        isActive ? "border-[2px] border-[#FF6767]" : "border border-[#A1A3AB]"
+      } rounded-xl min-h-24 p-3.5`}
+    >
       {/* <==================Task Card===================> */}
 
       {/* Three Dot Menu */}
       <div>
         <button
-          id="basic-button"
+          id={`basic-button-${uniqeIdForButton}`}
           aria-controls={open ? "basic-menu" : undefined}
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
-          className="absolute top-1 right-1 cursor-pointer outline-none z-10 px-2"
+          className="absolute top-1 right-1 cursor-pointer outline-none z-30 px-2"
           onClick={handleClick}
         >
           <PiDotsThreeOutlineLight className="text-2xl text-[#8f9097]" />
         </button>
+
         <Menu
-          id="basic-menu"
+          id={`basic-menu`}
           anchorEl={anchorEl}
           open={open}
           disableScrollLock
           onClose={handleClose}
           slotProps={{
             list: {
-              "aria-labelledby": "basic-button",
+              "aria-labelledby": `${uniqeIdForButton}`,
             },
           }}
         >
-          <MenuItem onClick={handleVital}>Vital</MenuItem>
+          <MenuItem onClick={handleVital}>
+            {isVital ? "Vital" : "Remove vital"}
+          </MenuItem>
           <MenuItem onClick={handleEdit}>Edit</MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
           <MenuItem onClick={handleFinish}>Finish</MenuItem>
@@ -169,11 +199,7 @@ const TaskCard1 = ({
           {/* Status Ring */}
           <div
             className={`absolute top-1/2 -translate-y-1/2 -translate-x-[150%] left-0 w-3 h-3 xl:w-4 xl:h-4 rounded-full 
-                    border-[2px] ${
-                      cardData.cardStatus == "Not Started"
-                        ? "border-[#f21e1e]"
-                        : "border-[#0225ff]"
-                    }`}
+                    border-[2px] ${getCardRingTheme(cardData.cardStatus)}`}
           ></div>
           <p className="font-semibold text-base capitalize">
             {cardData.cardTitle}
@@ -206,11 +232,9 @@ const TaskCard1 = ({
           <p>
             Status:{" "}
             <span
-              className={`${
-                cardData.cardStatus == "Not Started"
-                  ? "text-[#f21e1e]"
-                  : "text-[#0225ff]"
-              } text-nowrap`}
+              className={`${getCardStatusTheme(
+                cardData.cardStatus
+              )} text-nowrap`}
             >
               {cardData.cardStatus}
             </span>

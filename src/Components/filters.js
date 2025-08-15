@@ -33,3 +33,19 @@ export const filterNotStartedTask = (data) => {
   });
   return filtered;
 };
+
+export const filterVitalTask = (data) => {
+  let filtered = data.filter((tsk) => {
+    if (tsk.isVitalTask) return true;
+    else return false;
+  });
+  return filtered;
+};
+
+export const filterNotVitalTask = (data) => {
+  let filtered = data.filter((tsk) => {
+    if (!tsk.isVitalTask) return true;
+    else return false;
+  });
+  return filtered;
+};

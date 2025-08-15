@@ -2,256 +2,360 @@ import React, { useCallback, useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { RiEdit2Fill } from "react-icons/ri";
 import { Dialog } from "@mui/material";
-import card1 from "../assets/krishna1.jpg";
 import TaskCard1 from "../Components/TaskCard1";
 import { GoDotFill } from "react-icons/go";
 import { LuImageUp } from "react-icons/lu";
 import { useDropzone } from "react-dropzone";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import _ from "lodash";
+import {
+  deleteTaskById,
+  getTaskById,
+  getTaskList,
+  updateTask,
+} from "../api/user/user-api";
+import { setUser } from "../Redux/userSlice";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+import { FaRegImage } from "react-icons/fa6";
+import { setIsLoading } from "../Redux/loaderSlice";
+import { filterNotVitalTask } from "../Components/filters";
 
 const Mytasks = () => {
+  let dispatch = useDispatch();
   let userData = useSelector((state) => state.user.data);
-  let [addTaskModel, setAddTaskModel] = useState(false);
-  let [taskFormData, setTaskFormData] = useState({
-    title: "",
-    data: "",
-    priority: "",
-    taskDesc: "",
-    taskImages: [],
+  let [MyTask, SetMyTask] = useState([]);
+  let [editTaskModel, setEditTaskModel] = useState(false);
+  let [editTask, setEditTask] = useState({ id: null });
+  let [activeCard, setActiveCard] = useState({
+    index: null,
+    id: null,
   });
-
-  let handleClose = () => setInviteModel(false);
-
-  let dragDropFile = (files) => {
-    console.log(files);
-  };
-
-  let { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: useCallback(dragDropFile),
-  });
-
-  let todoCards = [
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 1",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "In Progress",
-      cardTitle: "Jay Shree Ram 2",
-      cardDesc: `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vitae error sequi excepturi quisquam aut obcaecati. Repellat placeat qui temporibus adipisci quod cupiditate! Consequatur quasi obcaecati optio aperiam libero culpa numquam!Provident nobis quam pariatur numquam voluptatum, illo quae tempora sequi id voluptas quidem. Laborum temporibus dolocorporis.`,
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "In Progress",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-    {
-      cardStatus: "Not Started",
-      cardTitle: "Jay Shree Ram 3",
-      cardDesc: "Sitaram Sitaram Sitaram Sitaram Sitaram",
-      cardPripority: "High",
-      createdOn: "08/07/2025",
-      cardImage: card1,
-    },
-  ];
 
   let [taskData, setTaskData] = useState({
-    taskImage: card1,
-    taskName: "Dhamra",
-    taskPriority: "Highest",
-    taskStatus: "In Progress",
-    taskCreatedOn: "08/07/2025",
-    taskTitle: "Karma",
-    taskObjective: "Focus on yor work not on fruit - Krishna",
-    taskDesp: `
-    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quod velit fugit cum suscipit aut nostrum illo cumque dolorum voluptatibus minima dolores tempore quaerat fugiat eum eaque, doloremque officiis est neque.
-    Maxime, consectetur. A doloremque porro molestias doloribus laboriosam dolor ea, modi alias facere officia numquam dignissimos atque veniam vel sequi. Cumque ullam recusandae enim facilis voluptatibus, autem asperiores. Aut, amet!
-    Magni alias distinctio aperiam voluptatibus veniam quis a esse nemo facilis, atque obcaecati unde hic modi ipsum excepturi placeat. Nostrum tenetur aperiam repellat facere iure quam ea ad quibusdam doloribus.
-    Ipsum, voluptatem aut dolores dicta cumque sapiente qui dolor repellat tenetur architecto omnis libero ea impedit molestias, sint mollitia blanditiis. Fugiat pariatur optio mollitia reprehenderit atque omnis reiciendis voluptate ullam.
-    Magni alias distinctio aperiam voluptatibus veniam quis a esse nemo facilis, atque obcaecati unde hic modi ipsum excepturi placeat. Nostrum tenetur aperiam repellat facere iure quam ea ad quibusdam doloribus.
-    Ipsum, voluptatem aut dolores dicta cumque sapiente qui dolor repellat tenetur architecto omnis libero ea impedit molestias, sint mollitia blanditiis. Fugiat pariatur optio mollitia reprehenderit atque omnis reiciendis voluptate ullam.
-
-    `,
-    taskNotes: `
-    Magni alias distinctio aperiam voluptatibus veniam quis a esse nemo facilis, atque obcaecati unde hic modi ipsum excepturi placeat. Nostrum tenetur aperiam repellat facere iure quam ea ad quibusdam doloribus.
-    Magni alias distinctio aperiam voluptatibus veniam quis a esse nemo facilis, atque obcaecati unde hic modi ipsum excepturi placeat. Nostrum tenetur aperiam repellat facere iure quam ea ad quibusdam doloribus.
-    Ipsum, voluptatem aut dolores dicta cumque sapiente qui dolor repellat tenetur architecto omnis libero ea impedit molestias, sint mollitia blanditiis. Fugiat pariatur optio mollitia reprehenderit atque omnis reiciendis voluptate ullam.`,
-    taskDeadline: "09/07/2025",
+    category: "",
+    completedOn: "",
+    createdAt: "",
+    isVitalTask: "",
+    priority: "",
+    status: "",
+    taskdate: "",
+    taskdesc: "",
+    taskimage: "",
+    tasktitle: "",
   });
 
-  useEffect(() => {
+  // Get task method to fetch
+  let fetchTasks = async () => {
     try {
-    } catch (error) {}
-  }, []);
+      let data = await getTaskList();
+      // console.log(data.user);
+      if (!_.isEqual(data.user, userData)) {
+        dispatch(setUser(data.user));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+    MyTask = filterNotVitalTask(userData.tasks);
+    SetMyTask([...MyTask]);
+    if (userData.tasks.length > 0) {
+      setActiveCard({
+        index: 0,
+        id: userData.tasks[0]._id,
+      });
+    }
+  }, [userData]);
+
+  // React hook for for add task form
+  let {
+    register,
+    handleSubmit,
+    control,
+    getValues,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm();
+
+  {
+    /* <===============  Edit Task Dialog Form handleSubmit  ==============>*/
+  }
+  let onEditTask = async (data) => {
+    let res;
+
+    try {
+      res = await updateTask(activeCard.id, data);
+      // console.log("EditResponse:", res);
+
+      if (res.success) {
+        setEditTaskModel(false);
+        await fetchTasks();
+        toast.success(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  let getTaskData = async (taskId) => {
+    let data = await getTaskById(taskId);
+    // console.log(data.task);
+    setTaskData(data.task);
+  };
+
+  const handleDelete = async () => {
+    dispatch(setIsLoading(true));
+    try {
+      let data = await deleteTaskById(activeCard.id);
+      await fetchTasks();
+    } catch (error) {
+      console.log(error);
+      toast.error("Error in deleting task");
+    }
+  };
+
+  let formateDate = (date) => {
+    if (date) {
+      let myDate = new Date(date);
+      let dateFormatOptions = {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      };
+      let completedDate = new Intl.DateTimeFormat(
+        "en-GB",
+        dateFormatOptions
+      ).format(myDate);
+
+      // console.log(completedDate); // 15/08/2025, 11:27 am
+      return completedDate;
+    } else return "";
+  };
+
+  const handleEdit = async () => {
+    setEditTaskModel(true);
+  };
+
+  useEffect(() => {
+    let editFormVal = ["tasktitle", "taskdate", "priority", "taskdesc"];
+
+    if (taskData && editTaskModel) {
+      for (let val of editFormVal) {
+        setValue(val, taskData[val]);
+      }
+    }
+  }, [editTaskModel, setValue]);
+
+  useEffect(() => {
+    // console.log(activeCard.id);
+    if (activeCard.id) getTaskData(activeCard.id);
+  }, [activeCard]);
+
+  let getCardStatusTheme = (status) => {
+    if (status == "completed") return "text-[#05a301]";
+    else if (status == "in progress") return "text-[#0225ff]";
+    else return "text-[#f21e1e]";
+  };
+
+  let getPriorityTheme = (status) => {
+    if (status == "low") return "text-[#05a301]";
+    else if (status == "moderate") return "text-[#0225ff]";
+    else return "text-[#f21e1e]";
+  };
 
   return (
-    <div className="px-10 xl:px-18">
-      <div className="flex gap-4">
+    <div className="h-screen px-10 xl:px-18">
+      <div className="h-full flex gap-4 pb-10">
         {/* TodoTask - in Progress/Not Started */}
-        <div className="w-[45%] p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
+        <div className="w-[45%] flex flex-col max-h-screen p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
           <div className="flex flex-col mb-4">
             <span className="font-semibold">My Tasks</span>
             <span className="w-7 border border-[#FF6767]"></span>
           </div>
 
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
-          <ul className="flex flex-col gap-y-3">
-            {todoCards.map((cd, inx) => {
-              return (
-                <li key={`todoCard-${inx}`}>
-                  <TaskCard1
-                    cardData={{
-                      cardStatus: cd.cardStatus,
-                      cardTitle: cd.cardTitle,
-                      cardDesc: cd.cardDesc,
-                      cardPripority: cd.cardPripority,
-                      createdOn: cd.createdOn,
-                      cardImage: cd.cardImage,
+
+          {MyTask.length > 0 ? (
+            <ul className="h-full px-2 myScrollBar overflow-y-auto flex flex-1 flex-col gap-y-3">
+              {MyTask.map((tsk, inx) => {
+                return (
+                  <li
+                    key={`todoCard-${inx}`}
+                    className="cursor-pointer"
+                    onClick={(e) => {
+                      setActiveCard({ index: inx, id: tsk._id });
                     }}
-                  />
-                </li>
-              );
-            })}
-          </ul>
+                  >
+                    <TaskCard1
+                      cardData={{
+                        cardId: tsk._id,
+                        cardStatus: tsk.status,
+                        cardTitle: tsk.tasktitle,
+                        cardDesc: tsk.taskdesc,
+                        cardPriority: tsk.priority,
+                        createdOn: tsk.createdAt,
+                        cardImage: tsk.taskimage,
+                      }}
+                      isVital={true}
+                      isActive={activeCard.index == inx}
+                      setEditTaskFlag={setEditTask}
+                      fetchTasksMethod={fetchTasks}
+                      editTaskModel={editTaskModel}
+                      setEditTaskModel={setEditTaskModel}
+                      setEditFormValues={setValue}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <ul className="h-full flex flex-col justify-center gap-y-3">
+              <li>
+                <p className="font-semibold text-xl text-center">
+                  No Task found
+                </p>
+              </li>
+            </ul>
+          )}
+
           {/* <================ ToDo Cards ================> */}
         </div>
 
-        {/* TodoTask - Completed */}
+        {/* TodoTask - View */}
         <div className="w-[55%]">
-          <div className="p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
-            {/* Task Header */}
-            <div className="flex gap-3 items-end mb-4">
-              <div>
-                <img
-                  src={taskData.taskImage}
-                  alt="Task Image"
-                  className="w-32 h-28 rounded-xl"
-                />
+          {MyTask.length > 0 ? (
+            <div className="min-h-full max-h-screen flex flex-col justify-between p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
+              {/* Task Header */}
+              <div className="flex gap-3 items-end mb-4">
+                <div>
+                  {taskData.taskimage && taskData.taskimage != "no image" ? (
+                    <>
+                      <img
+                        src={taskData.taskimage}
+                        alt="Task Image"
+                        className="w-32 h-28 rounded-xl"
+                      />
+                    </>
+                  ) : (
+                    <div>
+                      <FaRegImage className="w-32 h-28 rounded-2xl text-[#A1A3AB]" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-base capitalize font-semibold">
+                    {taskData.tasktitle}
+                  </p>
+                  <p className="text-xs">
+                    Priority:{" "}
+                    <span
+                      className={`${getPriorityTheme(
+                        taskData.priority
+                      )} capitalize`}
+                    >
+                      {taskData.priority}
+                    </span>
+                  </p>
+                  <p className="text-xs capitalize">
+                    Status:{" "}
+                    <span className={`${getCardStatusTheme(taskData.status)}`}>
+                      {taskData.status}
+                    </span>
+                  </p>
+                  <p className="text-[11px] text-[#747474]">
+                    Created on: {formateDate(taskData.createdAt)}
+                  </p>
+                  {taskData.completedOn && (
+                    <p className="text-[11px] text-[#05a301]">
+                      Completed on: {formateDate(taskData.completedOn)}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <p className="text-base font-semibold">{taskData.taskName}</p>
-                <p className="text-xs">
-                  Priority:{" "}
-                  <span className="text-[#f21e1e]">
-                    {taskData.taskPriority}
+
+              {/* Task Details */}
+              <div className="text-[#747474] max-h-full myScrollBar overflow-y-auto pe-2 flex flex-1 flex-col gap-1 mb-10">
+                <p className="flex items-center gap-1">
+                  <span className="font-semibold text-[#616060]">
+                    Task Title:{" "}
+                  </span>
+                  <span className="text-sm capitalize">
+                    {taskData.tasktitle}
                   </span>
                 </p>
-                <p className="text-xs">
-                  Status:{" "}
-                  <span className="text-[#f21e1e]">{taskData.taskStatus}</span>
-                </p>
-                <p className="text-[10px] text-[#747474]">
-                  Created on: {taskData.taskCreatedOn}
+
+                <p>
+                  <span className="font-semibold text-[#616060]">
+                    Task Description:{" "}
+                  </span>
+                  <span className="text-sm">{taskData.taskdesc}</span>
                 </p>
               </div>
-            </div>
 
-            {/* Task Details */}
-            <div className="text-[#747474] flex flex-col gap-1 mb-10">
-              <p className="flex items-center gap-1">
-                <span className="font-semibold text-[#616060]">
-                  Task Title:{" "}
-                </span>
-                <span className="text-sm">{taskData.taskTitle}</span>
+              {/* Task Tab Footer */}
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  className="w-9 h-9 bg-[#fc7474] hover:bg-[#FF6767] rounded-lg flex justify-center items-center cursor-pointer"
+                  onClick={handleDelete}
+                >
+                  <MdDelete className="text-white text-xl" />
+                </button>
+                <button
+                  type="button"
+                  className="w-9 h-9 bg-[#fc7474] hover:bg-[#FF6767] rounded-lg flex justify-center items-center cursor-pointer"
+                  onClick={handleEdit}
+                >
+                  <RiEdit2Fill className="text-white text-xl" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="min-h-full flex justify-center items-center p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
+              <p className="font-semibold text-xl text-center">
+                No Task to view
               </p>
-
-              {/* <p className="">
-                <span className="font-semibold text-[#616060]">
-                  Objective:{" "}
-                </span>
-                <span className="text-sm">{taskData.taskObjective}</span>
-              </p> */}
-
-              <p className="">
-                <span className="font-semibold text-[#616060]">
-                  Task Description:{" "}
-                </span>
-                <span className="text-sm">{taskData.taskDesp}</span>
-              </p>
-
-              {/* <p className="">
-                <span className="font-semibold text-[#616060]">
-                  Additional Notes:{" "}
-                </span>
-                <span className="text-sm">{taskData.taskNotes}</span>
-              </p> */}
-
-              {/* <p className="flex items-center gap-1">
-                <span className="font-semibold text-[#616060]">
-                  Deadline for Submission:
-                </span>
-                <span className="text-sm">{taskData.taskDeadline}</span>
-              </p> */}
             </div>
-
-            {/* Task Tab Footer */}
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                className="w-9 h-9 bg-[#fc7474] hover:bg-[#FF6767] rounded-lg flex justify-center items-center cursor-pointer"
-              >
-                <MdDelete className="text-white text-xl" />
-              </button>
-              <button
-                type="button"
-                className="w-9 h-9 bg-[#fc7474] hover:bg-[#FF6767] rounded-lg flex justify-center items-center cursor-pointer"
-                onClick={() => setAddTaskModel(true)}
-              >
-                <RiEdit2Fill className="text-white text-xl" />
-              </button>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Edit Task Dialog */}
+        {/* <===============  Add Task Dialog  ==============>*/}
         <Dialog
-          open={addTaskModel}
+          open={editTaskModel}
           fullWidth={true}
           maxWidth={"md"}
           disableScrollLock
         >
           <div className="p-14">
             <div className="flex justify-between items-center mb-7">
-              <p className="font-semibold flex flex-col">
+              <p className="font-semibold flex flex-col text-xl">
                 <span>Edit Task</span>
-                <span className="w-20 border-1 border-[#f24e1e]"></span>
+                <span className="w-12 border-1 border-[#f24e1e]"></span>
               </p>
               <button
                 type="button"
                 className="font-semibold text-sm underline underline-offset-2 cursor-pointer"
-                onClick={() => setAddTaskModel(false)}
+                onClick={() => {
+                  reset();
+                  setEditTaskModel(false);
+                }}
               >
                 Go Back
               </button>
             </div>
 
-            <form className="border border-[#b9b9b9] p-5 mb-10">
+            <form
+              className="border border-[#b9b9b9] p-5 mb-10"
+              onSubmit={handleSubmit(onEditTask)}
+              id="addTaskForm"
+            >
               {/* Title */}
               <div className="flex flex-col mb-2">
                 <label htmlFor="curpwd" className="font-semibold mb-1">
@@ -261,7 +365,18 @@ const Mytasks = () => {
                   type="text"
                   id="tasktitle"
                   className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
+                  {...register("tasktitle", {
+                    required: {
+                      value: true,
+                      message: "task title is required.",
+                    },
+                  })}
                 />
+                {errors.tasktitle && (
+                  <small className="text-red-500">
+                    {errors.tasktitle.message}
+                  </small>
+                )}
               </div>
 
               {/* Date */}
@@ -270,10 +385,22 @@ const Mytasks = () => {
                   Date
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   id="taskdate"
-                  className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
+                  className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
+                  {...register("taskdate", {
+                    required: {
+                      value: true,
+                      message: "task date is required.",
+                    },
+                  })}
                 />
+
+                {errors.taskdate && (
+                  <small className="text-red-500">
+                    {errors.taskdate.message}
+                  </small>
+                )}
               </div>
 
               {/* Priority */}
@@ -289,100 +416,206 @@ const Mytasks = () => {
                         <GoDotFill className="text-sm text-[#f21e1e]" />
                         <span>Extreme</span>
                       </p>
-                      <input type="checkbox" id="taskExtreme" />
+                      <input
+                        type="radio"
+                        value="extreme"
+                        {...register("priority", {
+                          required: {
+                            value: true,
+                            message: "al least one priority date is required.",
+                          },
+                        })}
+                      />
                     </label>
                   </li>
+
                   <li>
                     <label
-                      htmlFor="taskModerate"
+                      htmlFor="taskExtreme"
                       className="flex gap-3 items-center"
                     >
                       <p className="flex items-center gap-1">
                         <GoDotFill className="text-sm text-[#3abeff]" />
-
                         <span>Moderate</span>
                       </p>
-                      <input type="checkbox" id="taskModerate" />
+                      <input
+                        type="radio"
+                        value="moderate"
+                        {...register("priority", {
+                          required: {
+                            value: true,
+                            message: "al least one priority date is required.",
+                          },
+                        })}
+                      />
                     </label>
                   </li>
+
                   <li>
                     <label
-                      htmlFor="taskLow"
+                      htmlFor="taskExtreme"
                       className="flex gap-3 items-center"
                     >
                       <p className="flex items-center gap-1">
                         <GoDotFill className="text-sm text-[#05a301]" />
                         <span>Low</span>
                       </p>
-                      <input type="checkbox" id="taskLow" />
+                      <input
+                        type="radio"
+                        value="low"
+                        {...register("priority", {
+                          required: {
+                            value: true,
+                            message: "al least one priority date is required.",
+                          },
+                        })}
+                      />
                     </label>
                   </li>
                 </ul>
+                {errors.priority ? (
+                  <small className="text-red-500">
+                    {errors.priority.message}
+                  </small>
+                ) : (
+                  ""
+                )}
               </div>
 
               {/* Description and Image */}
-              <div className="flex gap-10">
-                <div className="flex flex-col mb-2">
+              <div className="flex justify-between gap-10 mb-7">
+                {/* Task descripttion */}
+                <div className="flex flex-col">
                   <label htmlFor="curpwd" className="font-semibold mb-1">
                     Task Description
                   </label>
                   <textarea
                     className="py-1.5 px-3 outline-none w-[500px] min-h-[200px] border border-[#A1A3AB] rounded-sm"
                     placeholder="Start writing here..."
+                    {...register("taskdesc", {
+                      required: {
+                        value: true,
+                        message: "Task Description is required.",
+                      },
+                    })}
                   ></textarea>
+                  {errors.taskdesc ? (
+                    <small className="text-red-500">
+                      {errors.taskdesc.message}
+                    </small>
+                  ) : (
+                    <small className="opacity-0">Test</small>
+                  )}
                 </div>
+                {/* Drag and drop component */}
+                <div className="w-full flex flex-col gap-0 flex-1">
+                  <Controller
+                    name="taskimage"
+                    control={control}
+                    rules={{
+                      required: {
+                        value: false,
+                        // message: "Task Image is required.",
+                      },
+                      // validate: {
+                      //   sizeLessthan5MB: (file) => {
+                      //     if (file && file.length > 0 && file[0].size > 5000000) {
+                      //       return "image size must be less than 5 MB";
+                      //     }
+                      //     return true;
+                      //   },
+                      // },
+                    }}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                    }) => {
+                      const onDrop = useCallback(
+                        (acceptedFiles) => {
+                          // Update React Hook Form's state with the accepted files
+                          onChange(acceptedFiles);
+                        },
+                        [onChange]
+                      );
 
-                <div className="flex flex-col mb-2 w-full">
-                  <label htmlFor="curpwd" className="font-semibold mb-1">
-                    Upload Image
-                  </label>
+                      const { getRootProps, getInputProps, isDragActive } =
+                        useDropzone({
+                          onDrop,
+                        });
 
-                  <div {...getRootProps()} className="h-full">
-                    <input {...getInputProps()} />
-                    {isDragActive ? (
-                      <div className="border border-[#A1A3AB] text-[#A1A3AB] rounded-sm h-full p-4 flex flex-col justify-center items-center">
-                        <LuImageUp className="w-16 h-16 mx-auto" />
-                        <small>Drop the files here</small>
-                      </div>
-                    ) : (
-                      <div className="border border-[#A1A3AB] text-[#A1A3AB] rounded-sm h-full p-4 flex flex-col justify-between">
-                        <LuImageUp className="w-16 h-16 mx-auto" />
-                        <small className="text-sm text-center">
-                          Drag & Drop files here
-                        </small>
-                        <p className="text-sm text-center">or</p>
-                        <div className="relative flex flex-col justify-center">
-                          <div className="flex justify-center">
-                            <label
-                              type="button"
-                              htmlFor="taskImage"
-                              className="py-1 px-3 border border-[#A1A3AB] text-sm text-[#A1A3AB] bg-transparent flex items-center gap-1 rounded-lg cursor-pointer"
-                            >
-                              Browse
-                            </label>
+                      return (
+                        <div className="flex flex-col w-full h-full">
+                          <label
+                            htmlFor="curpwd"
+                            className="font-semibold mb-1"
+                          >
+                            Upload Image
+                          </label>
+
+                          <div {...getRootProps()} className="h-full">
+                            <input {...getInputProps()} />
+                            {isDragActive ? (
+                              <div className="border border-[#A1A3AB] text-[#A1A3AB] rounded-sm h-full p-4 flex flex-col justify-center items-center">
+                                <LuImageUp className="w-16 h-16 mx-auto" />
+                                <small>Drop the files here</small>
+                              </div>
+                            ) : (
+                              <div className="border border-[#A1A3AB] text-[#A1A3AB] rounded-sm h-full p-4 flex flex-col justify-between">
+                                <LuImageUp className="w-16 h-16 mx-auto" />
+                                <small className="text-sm text-center">
+                                  Drag & Drop files here
+                                </small>
+                                {/* <p className="text-sm text-center">or</p> */}
+                                <div className="relative flex flex-col justify-center">
+                                  <div className="flex justify-center">
+                                    <button
+                                      type="button"
+                                      className="py-1 px-3 mb-1 border border-[#A1A3AB] text-sm text-[#A1A3AB] bg-transparent flex items-center gap-1 rounded-lg cursor-pointer hover:bg-[#A1A3AB] hover:text-white"
+                                    >
+                                      Browse
+                                    </button>
+                                  </div>
+
+                                  {/* Display file name */}
+                                  {value && value.length > 0 ? (
+                                    <div className="flex items-center gap-1 text-blue-600">
+                                      <small>File:</small>
+                                      <small>{`${value[0].name.substring(
+                                        0,
+                                        18
+                                      )}...`}</small>
+                                    </div>
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
-
-                          <small className="text-center">
-                            {taskFormData?.taskImages?.length != 0
-                              ? taskFormData?.taskImages[0]?.name
-                              : ""}
-                          </small>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      );
+                    }}
+                  />
+
+                  {errors.taskimage ? (
+                    <small className="text-red-500">
+                      {errors.taskimage.message}
+                    </small>
+                  ) : (
+                    <small className="opacity-0">Test</small>
+                  )}
                 </div>
               </div>
-            </form>
 
-            <div>
-              <button
-                type="submit"
-                className="py-1.5 px-10 bg-[#f24e1e] text-white flex items-center gap-1 rounded-sm cursor-pointer"
-              >
-                Add
-              </button>
-            </div>
+              <div>
+                <button
+                  type="submit"
+                  className="py-1.5 px-10 bg-[#f24e1e] text-white flex items-center gap-1 rounded-sm 
+                        cursor-pointer"
+                >
+                  Edit
+                </button>
+              </div>
+            </form>
           </div>
         </Dialog>
       </div>
