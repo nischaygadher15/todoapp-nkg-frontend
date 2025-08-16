@@ -69,15 +69,6 @@ const Dashboard = () => {
     notStarted: 0,
   });
   let [newUpload, setNewUpload] = useState(false);
-  let [removeImageDialog, setRemoveImageDialog] = useState(false);
-  let closeRemoveImageDialog = () => {
-    setRemoveImageDialog(false);
-  };
-
-  let agreeImageDiaglog = () => {
-    setRemoveImageDialog(false);
-    setNewUpload(true);
-  };
 
   // Successful Login toast after first login
   useEffect(() => {
@@ -181,7 +172,7 @@ const Dashboard = () => {
       if (editTask.flag) {
         formData.append("newUpload", newUpload);
         res = await updateTask(editTask.id, formData);
-        // console.log("EditResponse:", res);
+        // console.log("EditResponse:", res); 
       } else {
         res = await addTask(formData);
         // console.log("AddTaskResponse:", res);
@@ -200,7 +191,7 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => console.log(newUpload), [newUpload]);
+  // useEffect(() => console.log(newUpload), [newUpload]);
 
   return (
     <div className="px-10 xl:px-18">
