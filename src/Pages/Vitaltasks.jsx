@@ -64,14 +64,16 @@ const Vitaltasks = () => {
     //Filter all not completed tasks
     vitalTask = filterVitalTask(userData.tasks);
     setVitalTask([...vitalTask]);
+  }, [userData]);
 
+  useEffect(() => {
     if (vitalTask.length > 0) {
       setActiveCard({
         index: 0,
         id: vitalTask[0]._id,
       });
     }
-  }, [userData]);
+  }, [vitalTask]);
 
   // React hook for for add task form
   let {
@@ -166,8 +168,8 @@ const Vitaltasks = () => {
     <div className="h-screen px-10 xl:px-18">
       <div className="h-full flex gap-4 pb-10">
         {/* TodoTask - in Progress/Not Started */}
-        <div className="w-[45%] flex flex-col max-h-screen p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
-          <div className="flex flex-col mb-4">
+        <div className="w-[45%] flex flex-col max-h-screen py-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
+          <div className="px-5 flex flex-col mb-4">
             <span className="font-semibold">Vital Tasks</span>
             <span className="w-7 border border-[#FF6767]"></span>
           </div>
@@ -175,7 +177,7 @@ const Vitaltasks = () => {
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
 
           {vitalTask.length > 0 ? (
-            <ul className="h-full px-2 myScrollBar overflow-y-auto flex flex-1 flex-col gap-y-3">
+            <ul className="h-full px-4 myScrollBar overflow-y-auto flex flex-1 flex-col gap-y-3">
               {vitalTask.map((tsk, inx) => {
                 return (
                   <li
@@ -193,7 +195,7 @@ const Vitaltasks = () => {
                         cardDesc: tsk.taskdesc,
                         cardPriority: tsk.priority,
                         createdOn: tsk.createdAt,
-                        cardImage: tsk.taskimage,
+                        cardImage: tsk.taskimage.secure_url,
                       }}
                       isVital={false}
                       isActive={activeCard.index == inx}
@@ -227,10 +229,10 @@ const Vitaltasks = () => {
               {/* Task Header */}
               <div className="flex gap-3 items-end mb-4">
                 <div>
-                  {taskData.taskimage && taskData.taskimage != "no image" ? (
+                  {taskData.taskimage.secure_url ? (
                     <>
                       <img
-                        src={taskData.taskimage}
+                        src={taskData.taskimage.secure_url}
                         alt="Task Image"
                         className="w-32 h-28 rounded-xl"
                       />

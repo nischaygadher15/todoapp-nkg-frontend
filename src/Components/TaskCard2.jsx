@@ -85,10 +85,10 @@ const TaskCard2 = ({ cardData }) => {
             </p>
           </div>
           <div className="">
-            {cardData.cardImage != "no image" ? (
+            {cardData.cardImage.secure_url ? (
               <>
                 <img
-                  src={cardData.cardImage}
+                  src={cardData.cardImage.secure_url}
                   alt="Card Image"
                   className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
                 />

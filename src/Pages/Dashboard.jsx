@@ -1,4 +1,12 @@
-import { Avatar, Button, Dialog } from "@mui/material";
+import {
+  Avatar,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import matsya from "../assets/Matsya.JPG";
 import kurma from "../assets/Kurma.JPG";
@@ -34,6 +42,8 @@ import {
   filterNotCompletedTask,
   filterNotStartedTask,
 } from "../Components/filters";
+import { IoIosCloseCircle } from "react-icons/io";
+import { AiFillCloseCircle } from "react-icons/ai";
 
 const Dashboard = () => {
   let dispatch = useDispatch();
@@ -48,6 +58,7 @@ const Dashboard = () => {
   let [editTask, setEditTask] = useState({
     flag: false,
     id: null,
+    imgaePreview: null,
   });
   const toastShown = useRef(false);
   let [completedTask, setCompletedTask] = useState([]);
@@ -57,6 +68,16 @@ const Dashboard = () => {
     inProgrss: 0,
     notStarted: 0,
   });
+  let [newUpload, setNewUpload] = useState(false);
+  let [removeImageDialog, setRemoveImageDialog] = useState(false);
+  let closeRemoveImageDialog = () => {
+    setRemoveImageDialog(false);
+  };
+
+  let agreeImageDiaglog = () => {
+    setRemoveImageDialog(false);
+    setNewUpload(true);
+  };
 
   // Successful Login toast after first login
   useEffect(() => {
@@ -74,7 +95,9 @@ const Dashboard = () => {
   let dashavatar = [matsya, kurma, varah, vaman];
 
   // Invote Model close function
-  let handleClose = () => setInviteModel(false);
+  let handleClose = () => {
+    setInviteModel(false);
+  };
 
   // Get task method to fetch
   let fetchTasks = async () => {
@@ -156,6 +179,7 @@ const Dashboard = () => {
 
     try {
       if (editTask.flag) {
+        formData.append("newUpload", newUpload);
         res = await updateTask(editTask.id, formData);
         // console.log("EditResponse:", res);
       } else {
@@ -171,8 +195,12 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setNewUpload(false);
     }
   };
+
+  useEffect(() => console.log(newUpload), [newUpload]);
 
   return (
     <div className="px-10 xl:px-18">
@@ -227,10 +255,10 @@ const Dashboard = () => {
       {/* <===============  Main Dashboard  ==============>*/}
       <div className="max-h-screen border-2 border-[#E3E5EC] p-6 xl:p-7 flex gap-4">
         {/* TodoTask - in Progress/Not Started */}
-        <div className="w-1/2 p-5 xl:p-7 flex flex-col gap-3 rounded-xl shadow-lg">
+        <div className="w-1/2 py-5 xl:p-7 flex flex-col gap-3 rounded-xl shadow-lg">
           {/* TodoTask - in Progress/Not Started heading */}
           <div>
-            <div className="flex justify-between items-center">
+            <div className="px-5 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <BsClipboardPlus className="text-xl text-[#A6A8B0]" />
                 <span className="text-[#FF6767] font-semibold">To-Do</span>
@@ -249,7 +277,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="px-5 flex gap-2">
               <p>20 June</p> {/*Today's Date*/}
               <p className="flex items-center text-[#A6A8B0]">
                 <BsDot className="text-lg text-[#A6A8B0]" />
@@ -260,7 +288,7 @@ const Dashboard = () => {
 
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
           {notCompletedTask.length > 0 ? (
-            <ul className="myScrollBar flex flex-1 overflow-y-auto flex-col gap-y-3 px-2">
+            <ul className="px-4 myScrollBar flex flex-1 overflow-y-auto flex-col gap-y-3">
               {notCompletedTask.map((tsk, inx) => {
                 return (
                   <li key={`todoCard-${inx}`}>
@@ -407,8 +435,8 @@ const Dashboard = () => {
           </div>
 
           {/* Completed Tasks */}
-          <div className="w-full flex flex-1 overflow-y-hidden flex-col p-5 xl:p-7 rounded-xl shadow-lg">
-            <div className="min-h-8 flex items-center gap-2 mb-7">
+          <div className="w-full flex flex-1 overflow-y-hidden flex-col py-5 xl:p-7 rounded-xl shadow-lg">
+            <div className="min-h-8 flex items-center gap-2 mb-7 px-5">
               <BsClipboardCheck className="text-xl text-[#A6A8B0]" />
               <span className="text-[#FF6767] font-semibold">
                 Completed Task
@@ -416,7 +444,7 @@ const Dashboard = () => {
             </div>
 
             {/* <================ ToDo Cards : Completed ================> */}
-            <ul className="myScrollBar flex flex-1 overflow-y-auto flex-col gap-y-3 px-2">
+            <ul className="px-4  myScrollBar flex flex-1 overflow-y-auto flex-col gap-y-3">
               {completedTask.length > 0 ? (
                 <>
                   {completedTask.map((tsk, inx) => {
@@ -555,6 +583,7 @@ const Dashboard = () => {
                 reset();
                 if (editTask.flag) setEditTask({ ...editTask, flag: false });
                 setAddTaskModel(false);
+                setNewUpload(false);
               }}
             >
               Go Back
@@ -567,127 +596,145 @@ const Dashboard = () => {
             id="addTaskForm"
             encType="multipart/form-data"
           >
-            {/* Title */}
-            <div className="flex flex-col mb-2">
-              <label htmlFor="curpwd" className="font-semibold mb-1">
-                Title
-              </label>
-              <input
-                type="text"
-                id="tasktitle"
-                className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
-                {...register("tasktitle", {
-                  required: { value: true, message: "task title is required." },
-                })}
-              />
-              {errors.tasktitle && (
-                <small className="text-red-500">
-                  {errors.tasktitle.message}
-                </small>
-              )}
-            </div>
-
-            {/* Date */}
-            <div className="flex flex-col mb-2">
-              <label htmlFor="curpwd" className="font-semibold mb-1">
-                Date
-              </label>
-              <input
-                type="datetime-local"
-                id="taskdate"
-                className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
-                {...register("taskdate", {
-                  required: {
-                    value: true,
-                    message: "task date is required.",
-                  },
-                })}
-              />
-
-              {errors.taskdate && (
-                <small className="text-red-500">
-                  {errors.taskdate.message}
-                </small>
-              )}
-            </div>
-
-            {/* Priority */}
-            <div className="mb-2">
-              <p className="font-semibold mb-1">Priority</p>
-              <ul className="list-none flex items-center gap-3">
-                <li>
-                  <label
-                    htmlFor="taskExtreme"
-                    className="flex gap-3 items-center"
-                  >
-                    <p className="flex items-center gap-1">
-                      <GoDotFill className="text-sm text-[#f21e1e]" />
-                      <span>Extreme</span>
-                    </p>
-                    <input
-                      type="radio"
-                      value="extreme"
-                      {...register("priority", {
-                        required: {
-                          value: true,
-                          message: "al least one priority date is required.",
-                        },
-                      })}
-                    />
+            <div className="w-full flex items-center gap-10">
+              <div className="w-[500px]">
+                {/* Title */}
+                <div className="flex flex-col mb-2">
+                  <label htmlFor="curpwd" className="font-semibold mb-1">
+                    Title
                   </label>
-                </li>
+                  <input
+                    type="text"
+                    id="tasktitle"
+                    className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
+                    {...register("tasktitle", {
+                      required: {
+                        value: true,
+                        message: "task title is required.",
+                      },
+                    })}
+                  />
+                  {errors.tasktitle && (
+                    <small className="text-red-500">
+                      {errors.tasktitle.message}
+                    </small>
+                  )}
+                </div>
 
-                <li>
-                  <label
-                    htmlFor="taskExtreme"
-                    className="flex gap-3 items-center"
-                  >
-                    <p className="flex items-center gap-1">
-                      <GoDotFill className="text-sm text-[#3abeff]" />
-                      <span>Moderate</span>
-                    </p>
-                    <input
-                      type="radio"
-                      value="moderate"
-                      {...register("priority", {
-                        required: {
-                          value: true,
-                          message: "al least one priority date is required.",
-                        },
-                      })}
-                    />
+                {/* Date */}
+                <div className="flex flex-col mb-2">
+                  <label htmlFor="curpwd" className="font-semibold mb-1">
+                    Date
                   </label>
-                </li>
+                  <input
+                    type="datetime-local"
+                    id="taskdate"
+                    className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
+                    {...register("taskdate", {
+                      required: {
+                        value: true,
+                        message: "task date is required.",
+                      },
+                    })}
+                  />
 
-                <li>
-                  <label
-                    htmlFor="taskExtreme"
-                    className="flex gap-3 items-center"
-                  >
-                    <p className="flex items-center gap-1">
-                      <GoDotFill className="text-sm text-[#05a301]" />
-                      <span>Low</span>
-                    </p>
-                    <input
-                      type="radio"
-                      value="low"
-                      {...register("priority", {
-                        required: {
-                          value: true,
-                          message: "al least one priority date is required.",
-                        },
-                      })}
-                    />
-                  </label>
-                </li>
-              </ul>
-              {errors.priority ? (
-                <small className="text-red-500">
-                  {errors.priority.message}
-                </small>
-              ) : (
-                ""
-              )}
+                  {errors.taskdate && (
+                    <small className="text-red-500">
+                      {errors.taskdate.message}
+                    </small>
+                  )}
+                </div>
+
+                {/* Priority */}
+                <div className="mb-2">
+                  <p className="font-semibold mb-1">Priority</p>
+                  <ul className="list-none flex items-center gap-3">
+                    <li>
+                      <label
+                        htmlFor="taskExtreme"
+                        className="flex gap-3 items-center"
+                      >
+                        <p className="flex items-center gap-1">
+                          <GoDotFill className="text-sm text-[#f21e1e]" />
+                          <span>Extreme</span>
+                        </p>
+                        <input
+                          type="radio"
+                          value="extreme"
+                          {...register("priority", {
+                            required: {
+                              value: true,
+                              message:
+                                "al least one priority date is required.",
+                            },
+                          })}
+                        />
+                      </label>
+                    </li>
+
+                    <li>
+                      <label
+                        htmlFor="taskExtreme"
+                        className="flex gap-3 items-center"
+                      >
+                        <p className="flex items-center gap-1">
+                          <GoDotFill className="text-sm text-[#3abeff]" />
+                          <span>Moderate</span>
+                        </p>
+                        <input
+                          type="radio"
+                          value="moderate"
+                          {...register("priority", {
+                            required: {
+                              value: true,
+                              message:
+                                "al least one priority date is required.",
+                            },
+                          })}
+                        />
+                      </label>
+                    </li>
+
+                    <li>
+                      <label
+                        htmlFor="taskExtreme"
+                        className="flex gap-3 items-center"
+                      >
+                        <p className="flex items-center gap-1">
+                          <GoDotFill className="text-sm text-[#05a301]" />
+                          <span>Low</span>
+                        </p>
+                        <input
+                          type="radio"
+                          value="low"
+                          {...register("priority", {
+                            required: {
+                              value: true,
+                              message:
+                                "al least one priority date is required.",
+                            },
+                          })}
+                        />
+                      </label>
+                    </li>
+                  </ul>
+                  {errors.priority ? (
+                    <small className="text-red-500">
+                      {errors.priority.message}
+                    </small>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
+
+              <div className="relative flex justify-center-safe flex-1 h-full py-2">
+                <img
+                  src={editTask.imgaePreview}
+                  alt="Taskimage Preview"
+                  className="w-full h-[200px] rounded-md"
+                />
+              </div>
             </div>
 
             {/* Description and Image */}
@@ -740,6 +787,11 @@ const Dashboard = () => {
                   }) => {
                     const onDrop = useCallback(
                       (acceptedFiles) => {
+                        setNewUpload(true);
+                        setEditTask({
+                          ...editTask,
+                          imgaePreview: URL.createObjectURL(acceptedFiles[0]),
+                        });
                         // Update React Hook Form's state with the accepted files
                         onChange(acceptedFiles);
                       },
@@ -754,7 +806,7 @@ const Dashboard = () => {
                     return (
                       <div className="flex flex-col w-full h-full">
                         <label htmlFor="curpwd" className="font-semibold mb-1">
-                          Upload Image
+                          {editTask.flag ? "Replace Image" : "Upload Image"}
                         </label>
 
                         <div {...getRootProps()} className="h-full">

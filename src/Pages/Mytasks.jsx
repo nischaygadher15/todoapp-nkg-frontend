@@ -62,13 +62,16 @@ const Mytasks = () => {
     fetchTasks();
     MyTask = filterNotVitalTask(userData.tasks);
     SetMyTask([...MyTask]);
-    if (userData.tasks.length > 0) {
+  }, [userData]);
+
+  useEffect(() => {
+    if (MyTask.length > 0) {
       setActiveCard({
         index: 0,
-        id: userData.tasks[0]._id,
+        id: MyTask[0]._id,
       });
     }
-  }, [userData]);
+  }, [MyTask]);
 
   // React hook for for add task form
   let {
@@ -98,12 +101,12 @@ const Mytasks = () => {
       }
     } catch (error) {
       console.log(error);
+      toast.error(error.message);
     }
   };
 
   let getTaskData = async (taskId) => {
     let data = await getTaskById(taskId);
-    // console.log(data.task);
     setTaskData(data.task);
   };
 
@@ -154,7 +157,6 @@ const Mytasks = () => {
   }, [editTaskModel, setValue]);
 
   useEffect(() => {
-    // console.log(activeCard.id);
     if (activeCard.id) getTaskData(activeCard.id);
   }, [activeCard]);
 
@@ -174,8 +176,8 @@ const Mytasks = () => {
     <div className="h-screen px-10 xl:px-18">
       <div className="h-full flex gap-4 pb-10">
         {/* TodoTask - in Progress/Not Started */}
-        <div className="w-[45%] flex flex-col max-h-screen p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
-          <div className="flex flex-col mb-4">
+        <div className="w-[45%] flex flex-col max-h-screen py-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
+          <div className="flex flex-col mb-4 px-5">
             <span className="font-semibold">My Tasks</span>
             <span className="w-7 border border-[#FF6767]"></span>
           </div>
@@ -183,7 +185,7 @@ const Mytasks = () => {
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
 
           {MyTask.length > 0 ? (
-            <ul className="h-full px-2 myScrollBar overflow-y-auto flex flex-1 flex-col gap-y-3">
+            <ul className="h-full px-4 myScrollBar overflow-y-auto flex flex-1 flex-col gap-y-3">
               {MyTask.map((tsk, inx) => {
                 return (
                   <li
@@ -201,7 +203,7 @@ const Mytasks = () => {
                         cardDesc: tsk.taskdesc,
                         cardPriority: tsk.priority,
                         createdOn: tsk.createdAt,
-                        cardImage: tsk.taskimage,
+                        cardImage: tsk.taskimage.secure_url,
                       }}
                       isVital={true}
                       isActive={activeCard.index == inx}
@@ -235,10 +237,10 @@ const Mytasks = () => {
               {/* Task Header */}
               <div className="flex gap-3 items-end mb-4">
                 <div>
-                  {taskData.taskimage && taskData.taskimage != "no image" ? (
+                  {taskData.taskimage.secure_url ? (
                     <>
                       <img
-                        src={taskData.taskimage}
+                        src={taskData.taskimage.secure_url}
                         alt="Task Image"
                         className="w-32 h-28 rounded-xl"
                       />

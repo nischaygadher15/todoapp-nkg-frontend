@@ -55,12 +55,13 @@ const TaskCard1 = ({
 
     try {
       let data = await getTaskById(cardData.cardId);
-      // console.log(data.task);
+      console.log(data.task);
       settaskData(data.task);
 
       setEditTaskFlag({
         flag: true,
         id: cardData.cardId,
+        imgaePreview: data.task.taskimage.secure_url,
       });
 
       setEditTaskModel(true);
