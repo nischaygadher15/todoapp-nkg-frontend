@@ -9,6 +9,7 @@ import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
 import {
+  addTask,
   deleteTaskById,
   getTaskById,
   getTaskList,
@@ -26,12 +27,16 @@ const Vitaltasks = () => {
   let userData = useSelector((state) => state.user.data);
   let [editTaskModel, setEditTaskModel] = useState(false);
   let [vitalTask, setVitalTask] = useState([]);
-  let [editTask, setEditTask] = useState({ id: null });
+  let [editTask, setEditTask] = useState({
+    flag: false,
+    id: null,
+    imgaePreview: null,
+  });
   let [activeCard, setActiveCard] = useState({
     index: null,
     id: null,
   });
-
+  let [newUpload, setNewUpload] = useState(false);
   let [taskData, setTaskData] = useState({
     category: "",
     completedOn: "",
@@ -60,7 +65,6 @@ const Vitaltasks = () => {
 
   useEffect(() => {
     fetchTasks();
-
     //Filter all not completed tasks
     vitalTask = filterVitalTask(userData.tasks);
     setVitalTask([...vitalTask]);
@@ -89,21 +93,40 @@ const Vitaltasks = () => {
   {
     /* <===============  Edit Task Dialog Form handleSubmit  ==============>*/
   }
-
-  let onEditTask = async (data) => {
+  let onAddTask = async (data) => {
+    console.log(data);
     let res;
 
-    try {
-      res = await updateTask(activeCard.id, data);
-      // console.log("EditResponse:", res);
+    let formData = new FormData();
+    for (let fl in data) {
+      if (data[fl] && fl == "taskimage") {
+        formData.append(fl, data[fl][0]);
+      } else {
+        formData.append(fl, data[fl]);
+      }
+    }
 
-      if (res.success) {
+    try {
+      if (editTask.flag) {
+        formData.append("newUpload", newUpload);
+        res = await updateTask(editTask.id, formData);
+        console.log("EditResponse:", res);
+      } else {
+        formData.append("isVitalTask", true);
+        res = await addTask(formData);
+        // console.log("AddTaskResponse:", res);
+      }
+      if (res.success && res.upload) {
+        reset();
         setEditTaskModel(false);
         await fetchTasks();
+        toast.success(res.uploadMessage);
         toast.success(res.message);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setNewUpload(false);
     }
   };
 
@@ -147,15 +170,21 @@ const Vitaltasks = () => {
   };
 
   const handleEdit = async () => {
+    setEditTask({
+      id: activeCard.id,
+      imgaePreview: taskData.taskimage.secure_url,
+    });
     setEditTaskModel(true);
   };
 
   useEffect(() => {
     let editFormVal = ["tasktitle", "taskdate", "priority", "taskdesc"];
 
-    if (taskData && editTaskModel) {
-      for (let val of editFormVal) {
-        setValue(val, taskData[val]);
+    if (editTask.id == taskData.id) {
+      if (editTaskModel && editTask.flag) {
+        for (let val of editFormVal) {
+          setValue(val, taskData[val]);
+        }
       }
     }
   }, [editTaskModel, setValue]);
@@ -164,14 +193,41 @@ const Vitaltasks = () => {
     if (activeCard.id) getTaskData(activeCard.id);
   }, [activeCard]);
 
+  let getCardStatusTheme = (status) => {
+    if (status == "completed") return "text-[#05a301]";
+    else if (status == "in progress") return "text-[#0225ff]";
+    else return "text-[#f21e1e]";
+  };
+
+  let getPriorityTheme = (status) => {
+    if (status == "low") return "text-[#05a301]";
+    else if (status == "moderate") return "text-[#0225ff]";
+    else return "text-[#f21e1e]";
+  };
+
   return (
     <div className="h-screen px-10 xl:px-18">
       <div className="h-full flex gap-4 pb-10">
         {/* TodoTask - in Progress/Not Started */}
         <div className="w-[45%] flex flex-col max-h-screen py-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
-          <div className="px-5 flex flex-col mb-4">
-            <span className="font-semibold">Vital Tasks</span>
-            <span className="w-7 border border-[#FF6767]"></span>
+          <div className="flex justify-between px-5 mb-3">
+            <div className="px-5 flex flex-col mb-4">
+              <span className="font-semibold">Vital Tasks</span>
+              <span className="w-7 border border-[#FF6767]"></span>
+            </div>
+            <div>
+              <button
+                type="button"
+                className="py-0.5 px-2 flex items-center gap-1 border border-transparent hover:border-[#FF6767] rounded-md"
+                onClick={() => {
+                  setEditTask({ ...editTask, flag: false });
+                  setEditTaskModel(true);
+                }}
+              >
+                <span className="text-xl text-[#FF6767] font-semibold">+</span>
+                <span className="text-[#A6A8B0]">Add Task</span>
+              </button>
+            </div>
           </div>
 
           {/* <================ ToDo Cards : Not Started / Inprogress ================> */}
@@ -227,39 +283,50 @@ const Vitaltasks = () => {
           {vitalTask.length > 0 ? (
             <div className="min-h-full max-h-screen flex flex-col justify-between p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
               {/* Task Header */}
-              <div className="flex gap-3 items-end mb-4">
-                <div>
+              <div className="w-full max-h-80 flex gap-3 mb-4">
+                <div className="w-2/5">
                   {taskData.taskimage.secure_url ? (
                     <>
                       <img
                         src={taskData.taskimage.secure_url}
                         alt="Task Image"
-                        className="w-32 h-28 rounded-xl"
+                        className="w-full h-full rounded-xl"
                       />
                     </>
                   ) : (
                     <div>
-                      <FaRegImage className="w-32 h-28 rounded-2xl text-[#A1A3AB]" />
+                      <FaRegImage className="w-full h-full rounded-2xl text-[#A1A3AB]" />
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="w-3/5 flex flex-col justify-center gap-2">
                   <p className="text-base capitalize font-semibold">
                     {taskData.tasktitle}
                   </p>
                   <p className="text-xs">
                     Priority:{" "}
-                    <span className="text-[#f21e1e] capitalize">
+                    <span
+                      className={`${getPriorityTheme(
+                        taskData.priority
+                      )} capitalize`}
+                    >
                       {taskData.priority}
                     </span>
                   </p>
                   <p className="text-xs capitalize">
                     Status:{" "}
-                    <span className="text-[#f21e1e]">{taskData.status}</span>
+                    <span className={`${getCardStatusTheme(taskData.status)}`}>
+                      {taskData.status}
+                    </span>
                   </p>
                   <p className="text-[11px] text-[#747474]">
                     Created on: {formateDate(taskData.createdAt)}
                   </p>
+                  {taskData.completedOn && (
+                    <p className="text-[11px] text-[#05a301]">
+                      Completed on: {formateDate(taskData.completedOn)}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -319,7 +386,7 @@ const Vitaltasks = () => {
           <div className="p-14">
             <div className="flex justify-between items-center mb-7">
               <p className="font-semibold flex flex-col text-xl">
-                <span>Edit Task</span>
+                <span>{editTask.flag ? "Edit Task" : "Add Task"}</span>
                 <span className="w-12 border-1 border-[#f24e1e]"></span>
               </p>
               <button
@@ -327,7 +394,9 @@ const Vitaltasks = () => {
                 className="font-semibold text-sm underline underline-offset-2 cursor-pointer"
                 onClick={() => {
                   reset();
+                  if (editTask.flag) setEditTask({ ...editTask, flag: false });
                   setEditTaskModel(false);
+                  setNewUpload(false);
                 }}
               >
                 Go Back
@@ -336,133 +405,151 @@ const Vitaltasks = () => {
 
             <form
               className="border border-[#b9b9b9] p-5 mb-10"
-              onSubmit={handleSubmit(onEditTask)}
+              onSubmit={handleSubmit(onAddTask)}
               id="addTaskForm"
+              encType="multipart/form-data"
             >
-              {/* Title */}
-              <div className="flex flex-col mb-2">
-                <label htmlFor="curpwd" className="font-semibold mb-1">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  id="tasktitle"
-                  className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
-                  {...register("tasktitle", {
-                    required: {
-                      value: true,
-                      message: "task title is required.",
-                    },
-                  })}
-                />
-                {errors.tasktitle && (
-                  <small className="text-red-500">
-                    {errors.tasktitle.message}
-                  </small>
-                )}
-              </div>
-
-              {/* Date */}
-              <div className="flex flex-col mb-2">
-                <label htmlFor="curpwd" className="font-semibold mb-1">
-                  Date
-                </label>
-                <input
-                  type="datetime-local"
-                  id="taskdate"
-                  className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
-                  {...register("taskdate", {
-                    required: {
-                      value: true,
-                      message: "task date is required.",
-                    },
-                  })}
-                />
-
-                {errors.taskdate && (
-                  <small className="text-red-500">
-                    {errors.taskdate.message}
-                  </small>
-                )}
-              </div>
-
-              {/* Priority */}
-              <div className="mb-2">
-                <p className="font-semibold mb-1">Priority</p>
-                <ul className="list-none flex items-center gap-3">
-                  <li>
-                    <label
-                      htmlFor="taskExtreme"
-                      className="flex gap-3 items-center"
-                    >
-                      <p className="flex items-center gap-1">
-                        <GoDotFill className="text-sm text-[#f21e1e]" />
-                        <span>Extreme</span>
-                      </p>
-                      <input
-                        type="radio"
-                        value="extreme"
-                        {...register("priority", {
-                          required: {
-                            value: true,
-                            message: "al least one priority date is required.",
-                          },
-                        })}
-                      />
+              <div className="w-full flex items-center gap-10 mb-3">
+                <div className="w-[500px]">
+                  {/* Title */}
+                  <div className="flex flex-col mb-2">
+                    <label htmlFor="curpwd" className="font-semibold mb-1">
+                      Title
                     </label>
-                  </li>
+                    <input
+                      type="text"
+                      id="tasktitle"
+                      className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm"
+                      {...register("tasktitle", {
+                        required: {
+                          value: true,
+                          message: "task title is required.",
+                        },
+                      })}
+                    />
+                    {errors.tasktitle && (
+                      <small className="text-red-500">
+                        {errors.tasktitle.message}
+                      </small>
+                    )}
+                  </div>
 
-                  <li>
-                    <label
-                      htmlFor="taskExtreme"
-                      className="flex gap-3 items-center"
-                    >
-                      <p className="flex items-center gap-1">
-                        <GoDotFill className="text-sm text-[#3abeff]" />
-                        <span>Moderate</span>
-                      </p>
-                      <input
-                        type="radio"
-                        value="moderate"
-                        {...register("priority", {
-                          required: {
-                            value: true,
-                            message: "al least one priority date is required.",
-                          },
-                        })}
-                      />
+                  {/* Date */}
+                  <div className="flex flex-col mb-2">
+                    <label htmlFor="curpwd" className="font-semibold mb-1">
+                      Date
                     </label>
-                  </li>
+                    <input
+                      type="datetime-local"
+                      id="taskdate"
+                      className="py-1.5 px-3 outline-none max-w-[500px] border border-[#A1A3AB] rounded-sm cursor-pointer"
+                      {...register("taskdate", {
+                        required: {
+                          value: true,
+                          message: "task date is required.",
+                        },
+                      })}
+                    />
 
-                  <li>
-                    <label
-                      htmlFor="taskExtreme"
-                      className="flex gap-3 items-center"
-                    >
-                      <p className="flex items-center gap-1">
-                        <GoDotFill className="text-sm text-[#05a301]" />
-                        <span>Low</span>
-                      </p>
-                      <input
-                        type="radio"
-                        value="low"
-                        {...register("priority", {
-                          required: {
-                            value: true,
-                            message: "al least one priority date is required.",
-                          },
-                        })}
-                      />
-                    </label>
-                  </li>
-                </ul>
-                {errors.priority ? (
-                  <small className="text-red-500">
-                    {errors.priority.message}
-                  </small>
-                ) : (
-                  ""
-                )}
+                    {errors.taskdate && (
+                      <small className="text-red-500">
+                        {errors.taskdate.message}
+                      </small>
+                    )}
+                  </div>
+
+                  {/* Priority */}
+                  <div className="mb-2">
+                    <p className="font-semibold mb-1">Priority</p>
+                    <ul className="list-none flex items-center gap-3">
+                      <li>
+                        <label
+                          htmlFor="taskExtreme"
+                          className="flex gap-3 items-center"
+                        >
+                          <p className="flex items-center gap-1">
+                            <GoDotFill className="text-sm text-[#f21e1e]" />
+                            <span>Extreme</span>
+                          </p>
+                          <input
+                            type="radio"
+                            value="extreme"
+                            {...register("priority", {
+                              required: {
+                                value: true,
+                                message:
+                                  "al least one priority date is required.",
+                              },
+                            })}
+                          />
+                        </label>
+                      </li>
+
+                      <li>
+                        <label
+                          htmlFor="taskExtreme"
+                          className="flex gap-3 items-center"
+                        >
+                          <p className="flex items-center gap-1">
+                            <GoDotFill className="text-sm text-[#3abeff]" />
+                            <span>Moderate</span>
+                          </p>
+                          <input
+                            type="radio"
+                            value="moderate"
+                            {...register("priority", {
+                              required: {
+                                value: true,
+                                message:
+                                  "al least one priority date is required.",
+                              },
+                            })}
+                          />
+                        </label>
+                      </li>
+
+                      <li>
+                        <label
+                          htmlFor="taskExtreme"
+                          className="flex gap-3 items-center"
+                        >
+                          <p className="flex items-center gap-1">
+                            <GoDotFill className="text-sm text-[#05a301]" />
+                            <span>Low</span>
+                          </p>
+                          <input
+                            type="radio"
+                            value="low"
+                            {...register("priority", {
+                              required: {
+                                value: true,
+                                message:
+                                  "al least one priority date is required.",
+                              },
+                            })}
+                          />
+                        </label>
+                      </li>
+                    </ul>
+                    {errors.priority ? (
+                      <small className="text-red-500">
+                        {errors.priority.message}
+                      </small>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                </div>
+
+                <div className="relative w-full h-[200px] flex justify-center flex-1 py-2">
+                  {editTask.imgaePreview && (
+                    <img
+                      src={editTask.imgaePreview}
+                      alt="Taskimage Preview"
+                      className="w-full h-full rounded-md"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Description and Image */}
@@ -490,6 +577,7 @@ const Vitaltasks = () => {
                     <small className="opacity-0">Test</small>
                   )}
                 </div>
+
                 {/* Drag and drop component */}
                 <div className="w-full flex flex-col gap-0 flex-1">
                   <Controller
@@ -497,23 +585,30 @@ const Vitaltasks = () => {
                     control={control}
                     rules={{
                       required: {
-                        value: false,
-                        // message: "Task Image is required.",
+                        value: taskData.taskimage.secure_url ? false : true,
+                        message: "Task Image is required.",
                       },
-                      // validate: {
-                      //   sizeLessthan5MB: (file) => {
-                      //     if (file && file.length > 0 && file[0].size > 5000000) {
-                      //       return "image size must be less than 5 MB";
-                      //     }
-                      //     return true;
-                      //   },
-                      // },
+                      validate: {
+                        sizeLessthan5MB: (file) => {
+                          if (!taskData.taskimage.secure_url) {
+                            if (file[0].size > 5000000) {
+                              return "image size must be less than 5 MB";
+                            }
+                          }
+                          return true;
+                        },
+                      },
                     }}
                     render={({
                       field: { onChange, onBlur, value, name, ref },
                     }) => {
                       const onDrop = useCallback(
                         (acceptedFiles) => {
+                          setNewUpload(true);
+                          setEditTask({
+                            ...editTask,
+                            imgaePreview: URL.createObjectURL(acceptedFiles[0]),
+                          });
                           // Update React Hook Form's state with the accepted files
                           onChange(acceptedFiles);
                         },
@@ -531,7 +626,7 @@ const Vitaltasks = () => {
                             htmlFor="curpwd"
                             className="font-semibold mb-1"
                           >
-                            Upload Image
+                            {editTask.flag ? "Replace Image" : "Upload Image"}
                           </label>
 
                           <div {...getRootProps()} className="h-full">
@@ -593,9 +688,9 @@ const Vitaltasks = () => {
                 <button
                   type="submit"
                   className="py-1.5 px-10 bg-[#f24e1e] text-white flex items-center gap-1 rounded-sm 
-                        cursor-pointer"
+                                cursor-pointer"
                 >
-                  Edit
+                  {editTask.flag ? "Edit" : "Add"}
                 </button>
               </div>
             </form>

@@ -93,42 +93,12 @@ const Mytasks = () => {
   {
     /* <===============  Edit Task Dialog Form handleSubmit  ==============>*/
   }
-  // let onEditTask = async (data) => {
-  //   let res;
-  //   let formData = new FormData();
-  //   for (let fl in data) {
-  //     if (fl == "taskimage") {
-  //       formData.append(fl, data[fl][0]);
-  //     } else {
-  //       formData.append(fl, data[fl]);
-  //     }
-  //   }
-  //   try {
-  //     formData.append("newUpload", newUpload);
-  //     res = await updateTask(editTask.id, formData);
-  //     // console.log("EditResponse:", res);
-
-  //     if (res.success) {
-  //       reset();
-  //       setEditTaskModel(false);
-  //       await fetchTasks();
-  //       toast.success(res.uploadMessage);
-  //       toast.success(res.message);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error(error.message);
-  //   } finally {
-  //     setNewUpload(false);
-  //   }
-  // };
-
   let onAddTask = async (data) => {
     let res;
 
     let formData = new FormData();
     for (let fl in data) {
-      if (fl == "taskimage") {
+      if (data[fl] && fl == "taskimage") {
         formData.append(fl, data[fl][0]);
       } else {
         formData.append(fl, data[fl]);
@@ -205,8 +175,8 @@ const Mytasks = () => {
 
   useEffect(() => {
     let editFormVal = ["tasktitle", "taskdate", "priority", "taskdesc"];
-    if (editTask.flag) {
-      if (taskData && editTaskModel) {
+    if (editTask.id == taskData.id) {
+      if (editTaskModel && editTask.flag) {
         for (let val of editFormVal) {
           setValue(val, taskData[val]);
         }
@@ -308,23 +278,23 @@ const Mytasks = () => {
           {MyTask.length > 0 ? (
             <div className="min-h-full max-h-screen flex flex-col justify-between p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
               {/* Task Header */}
-              <div className="flex gap-3 items-end mb-4">
-                <div>
+              <div className="w-full max-h-80 flex gap-3 mb-4">
+                <div className="w-2/5">
                   {taskData.taskimage.secure_url ? (
                     <>
                       <img
                         src={taskData.taskimage.secure_url}
                         alt="Task Image"
-                        className="w-32 h-28 rounded-xl"
+                        className="w-full h-full rounded-xl"
                       />
                     </>
                   ) : (
                     <div>
-                      <FaRegImage className="w-32 h-28 rounded-2xl text-[#A1A3AB]" />
+                      <FaRegImage className="w-full h-full rounded-2xl text-[#A1A3AB]" />
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="w-3/5 flex flex-col justify-center gap-2">
                   <p className="text-base capitalize font-semibold">
                     {taskData.tasktitle}
                   </p>
@@ -419,7 +389,7 @@ const Mytasks = () => {
                 className="font-semibold text-sm underline underline-offset-2 cursor-pointer"
                 onClick={() => {
                   reset();
-                  // if (editTask.flag) setEditTask({ ...editTask, flag: false });
+                  if (editTask.flag) setEditTask({ ...editTask, flag: false });
                   setEditTaskModel(false);
                   setNewUpload(false);
                 }}
