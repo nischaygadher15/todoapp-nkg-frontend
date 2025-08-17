@@ -110,3 +110,13 @@ export const updateUserInfo = async (userId, data) => {
     throw error;
   }
 };
+
+export const changePassword = async (data) => {
+  try {
+    let res = await api.put("/changepass", data);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

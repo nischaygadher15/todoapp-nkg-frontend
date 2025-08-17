@@ -9,7 +9,7 @@ Image Uploading for User - DONE
 My Task page,- DONE
 vital task page, - DONE
 category page Crud + DB,
-Setting pages,
+Setting pages, => account infor update - DONE, change password - 
 Help page,
 Refresh & Access Token,
 Otp sign up / mobile registration

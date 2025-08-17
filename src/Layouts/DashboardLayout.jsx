@@ -272,7 +272,9 @@ const DashboardLayout = ({ dashTitle, children }) => {
         </section>
 
         {/* Main Dashboard */}
-        <section className="w-full ps-[260px] min-h-full">{children}</section>
+        <section className="w-full ps-[260px] min-h-full pb-10">
+          {children}
+        </section>
       </main>
     </div>
   );
