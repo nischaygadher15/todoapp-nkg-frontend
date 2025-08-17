@@ -1,3 +1,4 @@
+import { appBarClasses } from "@mui/material/AppBar";
 import api from "../utils/api";
 
 export const loginUser = async (userdata) => {
@@ -96,6 +97,16 @@ export const finishTask = async (taskId, taskData) => {
     return res.data;
   } catch (error) {
     console.error("API Error: Could not mark task as finish.", error);
+    throw error;
+  }
+};
+
+export const updateUserInfo = async (userId, data) => {
+  try {
+    let res = await api.put(`/accinfo/${userId}`, data);
+    return res.data;
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 };

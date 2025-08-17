@@ -1,0 +1,38 @@
+TodoApp-Nkg: [remaining features to work on]
+Finihsh feature, - DONE
+Navbar Search feature - DONE
+Navbar Notification feature
+Navbar calander feature
+Centralized API structure - DONE
+Dashboard Report component - DONE
+Image Uploading for User - DONE
+My Task page,- DONE
+vital task page, - DONE
+category page Crud + DB,
+Setting pages,
+Help page,
+Refresh & Access Token,
+Otp sign up / mobile registration
+login with google, facebook, github, instagram
+forgot password methods
+Mail new user for email verification
+Pomodora timer features
+Reminder to user for taks => mobile msg / email
+calender feature like google calender, user can schedual wholw day in it.
+
+
+@AI integration:
+=>build chate bot => to task for you or answer any questions for taks related
+
+User Invite:
+User chat app
+user invitation
+
+Other:
+Responsiveness,
+Admin Panel to moniter Users,
+Marketing.
+
+Mobile App (React native):
+Start learning React native
+start building desgin of TodoApp mobile app
