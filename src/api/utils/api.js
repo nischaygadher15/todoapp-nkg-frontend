@@ -43,18 +43,17 @@ api.interceptors.response.use(
       originalRequest._retry = true; // prevent infinite loop
 
       MyStore.dispatch(setRefreshing(true));
-      MyStore.dispatch(updateToken(null));
-      MyStore.dispatch(setUser(null));
-      MyStore.dispatch(setAuth(false));
-      sessionStorage.removeItem("todoToken");
-      sessionStorage.removeItem("todoUser");
-
       console.log("Access token expired → refreshing...");
-      const newToken = await getNewAccessToken();
+      const newTokenResp = await getNewAccessToken();
 
-      if (newToken) {
-        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+      if (newTokenResp.success) {
+        originalRequest.headers[
+          "Authorization"
+        ] = `Bearer ${newTokenResp.token}`;
         return api(originalRequest);
+      } else {
+        toast.error(newTokenResp.message);
+        return Promise.reject(error);
       }
     } else {
       MyStore.dispatch(setAuth(false));
@@ -66,7 +65,6 @@ api.interceptors.response.use(
     } else {
       toast.error(error.message);
     }
-    return Promise.reject(error);
   }
 );
 

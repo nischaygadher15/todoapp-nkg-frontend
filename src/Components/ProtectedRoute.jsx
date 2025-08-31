@@ -7,34 +7,36 @@ import { setUser, setAuth, setLoginLoading } from "../Redux/userSlice.js";
 import { toast } from "react-toastify";
 import { setRefreshing, updateToken } from "../Redux/tokenSclice.js";
 import { verifyAuth } from "../api/user/user-api.js";
+import { MyStore } from "../store.js";
+import { getNewAccessToken } from "../api/utils/refreshToken.js";
 
 const ProtectedRoute = ({ children }) => {
   let dispatch = useDispatch();
-
+  let navigate = useNavigate();
   let token = useSelector((state) => state.tokenBucket.token);
   let loading = useSelector((state) => state.user.loginLoading);
   let auth = useSelector((state) => state.user.auth.isAuthenticated);
   let isRefreshing = useSelector((state) => state.tokenBucket.isRefreshing);
 
   let clearUserData = () => {
+    sessionStorage.removeItem("todoUser");
+    sessionStorage.removeItem("todoToken");
+    sessionStorage.removeItem("todoUserId");
     dispatch(updateToken(null));
     dispatch(setUser(null));
     dispatch(setAuth(false));
-    sessionStorage.removeItem("todoToken");
-    sessionStorage.removeItem("todoUser");
   };
 
   useEffect(() => {
     if (isRefreshing || !token) {
       return;
     }
-
     dispatch(setLoginLoading(true));
-    console.log(token);
+    // console.log(token);
     let verifyToken = async () => {
       try {
         let res = await verifyAuth();
-        console.log("Auth:", res);
+        // console.log("Auth:", res);
         if (res.isAuthenticated) {
           dispatch(setUser(res.data));
           dispatch(setAuth(true));
@@ -57,9 +59,27 @@ const ProtectedRoute = ({ children }) => {
   if (loading || isRefreshing) return <Loader />;
 
   if (!auth) {
-    console.log("Redirected to /login-Protected route");
-    // return <Navigate to="/login" replace />;
-    console.log("NO TOKEN", token, auth);
+    console.log("NO TOKEN", token, auth, sessionStorage.getItem("todoUserId"));
+
+    if (!token && !auth && sessionStorage.getItem("todoUserId")) {
+      // MyStore.dispatch(setRefreshing(true));
+
+      let getRefresh = async () => {
+        console.log("no token or page refreshed → refreshing...");
+        let newTokenResp = await getNewAccessToken();
+        console.log(newTokenResp);
+
+        if (!newTokenResp.success) {
+          navigate("/login", { replace: true });
+          toast.error(newTokenResp.message);
+        }
+      };
+
+      getRefresh();
+    } else {
+      console.log("Redirected to /login-Protected route");
+      return <Navigate to="/login" replace />;
+    }
   }
 
   return children;

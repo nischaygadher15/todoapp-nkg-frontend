@@ -42,11 +42,12 @@ const DashboardLayout = ({ dashTitle, children }) => {
   };
 
   let clearUserData = () => {
+    sessionStorage.removeItem("todoToken");
+    sessionStorage.removeItem("todoUser");
+    sessionStorage.removeItem("todoUserId");
     dispatch(updateToken(null));
     dispatch(setUser(null));
     dispatch(setAuth(false));
-    sessionStorage.removeItem("todoToken");
-    sessionStorage.removeItem("todoUser");
   };
 
   let handleLogout = () => {

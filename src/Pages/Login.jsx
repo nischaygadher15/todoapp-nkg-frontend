@@ -52,13 +52,14 @@ const Login = () => {
         dispatch(setAuth(true));
         sessionStorage.setItem("todoToken", data.token);
         sessionStorage.setItem("todoUser", data.data);
+        sessionStorage.setItem("todoUserId", data.data._id);
         navigate("/dashboard", {
           state: {
             isLoggedinRightNow: true,
             message: data.message,
           },
         });
-        toast.success(data.message);
+        // toast.success(data.message);
       } else {
         toast.error("Somthing is wrong");
       }
