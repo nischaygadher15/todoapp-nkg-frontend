@@ -8,10 +8,10 @@ import {
   DialogTitle,
 } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import matsya from "../assets/Matsya.JPG";
-import kurma from "../assets/Kurma.JPG";
-import varah from "../assets/Varah.JPG";
-import vaman from "../assets/Vaman.JPG";
+import matsya from "../assets/Matsya.jpg";
+import kurma from "../assets/Kurma.jpg";
+import varah from "../assets/Varah.jpg";
+import vaman from "../assets/Vaman.jpg";
 import { HiUserAdd } from "react-icons/hi";
 import {
   BsClipboardCheck,
@@ -42,17 +42,13 @@ import {
   filterNotCompletedTask,
   filterNotStartedTask,
 } from "../Components/filters";
-import { IoIosCloseCircle } from "react-icons/io";
-import { AiFillCloseCircle } from "react-icons/ai";
 
 const Dashboard = () => {
   let dispatch = useDispatch();
   let location = useLocation();
   let navigate = useNavigate();
   let userData = useSelector((state) => state.user.data);
-  let token =
-    useSelector((state) => state.tokenBucket.token) ??
-    sessionStorage.getItem("todoToken");
+  let token = useSelector((state) => state.tokenBucket.token);
   let [inviteModel, setInviteModel] = useState(false);
   let [addTaskModel, setAddTaskModel] = useState(false);
   let [editTask, setEditTask] = useState({
@@ -69,6 +65,7 @@ const Dashboard = () => {
     notStarted: 0,
   });
   let [newUpload, setNewUpload] = useState(false);
+  let [fetchFlag, setFatchFlag] = useState(true);
 
   // Successful Login toast after first login
   useEffect(() => {
@@ -94,42 +91,44 @@ const Dashboard = () => {
   let fetchTasks = async () => {
     try {
       let data = await getTaskList();
-      // console.log(data.user);
-      if (!_.isEqual(data.user, userData)) {
-        dispatch(setUser(data.user));
-      }
+
+      //Filter all completed tasks
+      completedTask = filterCompltedTask(data.user.tasks);
+      setCompletedTask([...completedTask]);
+
+      //Filter all not completed tasks
+      notCompletedTask = filterNotCompletedTask(data.user.tasks);
+      setNotCompletedTask([...notCompletedTask]);
+
+      //Filter all in progress tasks
+      let inProgressTask = filterInProgressTask(data.user.tasks);
+
+      //Filter all not started tasks
+      let notStarted = filterNotStartedTask(data.user.tasks);
+
+      setReport({
+        completed:
+          Math.round((completedTask.length / data.user.tasks.length) * 10000) /
+          100,
+        inProgrss:
+          Math.round((inProgressTask.length / data.user.tasks.length) * 10000) /
+          100,
+        notStarted:
+          Math.round((notStarted.length / data.user.tasks.length) * 10000) /
+          100,
+      });
+
+      dispatch(setUser(data.user));
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    fetchTasks();
-
-    //Filter all completed tasks
-    completedTask = filterCompltedTask(userData.tasks);
-    setCompletedTask([...completedTask]);
-
-    //Filter all not completed tasks
-    notCompletedTask = filterNotCompletedTask(userData.tasks);
-    setNotCompletedTask([...notCompletedTask]);
-
-    //Filter all in progress tasks
-    let inProgressTask = filterInProgressTask(userData.tasks);
-
-    //Filter all not started tasks
-    let notStarted = filterNotStartedTask(userData.tasks);
-
-    setReport({
-      completed:
-        Math.round((completedTask.length / userData.tasks.length) * 10000) /
-        100,
-      inProgrss:
-        Math.round((inProgressTask.length / userData.tasks.length) * 10000) /
-        100,
-      notStarted:
-        Math.round((notStarted.length / userData.tasks.length) * 10000) / 100,
-    });
+    if (fetchFlag) {
+      fetchTasks();
+      setFatchFlag(false);
+    }
   }, [userData]);
 
   let randomNum = Math.round(Math.random() * 10000);
@@ -172,7 +171,7 @@ const Dashboard = () => {
       if (editTask.flag) {
         formData.append("newUpload", newUpload);
         res = await updateTask(editTask.id, formData);
-        // console.log("EditResponse:", res); 
+        // console.log("EditResponse:", res);
       } else {
         res = await addTask(formData);
         // console.log("AddTaskResponse:", res);
@@ -331,7 +330,7 @@ const Dashboard = () => {
               <div className="inline-flex flex-col items-center">
                 <div className="relative mb-3">
                   <CircularProgressbar
-                    value={report.completed}
+                    value={report.completed > 0 ? report.completed : 0}
                     maxValue={100}
                     counterClockwise={true}
                     strokeWidth={11}
@@ -348,7 +347,7 @@ const Dashboard = () => {
                     })}
                   />
                   <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold">
-                    {`${report.completed}%`}
+                    {`${report.completed > 0 ? report.completed : 0}%`}
                   </p>
                 </div>
                 <p className="flex items-center">
@@ -363,7 +362,7 @@ const Dashboard = () => {
               <div className="inline-flex flex-col">
                 <div className="relative mb-3">
                   <CircularProgressbar
-                    value={report.inProgrss}
+                    value={report.inProgrss > 0 ? report.inProgrss : 0}
                     maxValue={100}
                     counterClockwise={true}
                     strokeWidth={11}
@@ -380,7 +379,7 @@ const Dashboard = () => {
                     })}
                   />
                   <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold">
-                    {`${report.inProgrss}%`}
+                    {`${report.inProgrss > 0 ? report.inProgrss : 0}%`}
                   </p>
                 </div>
                 <p className="flex items-center">
@@ -395,7 +394,7 @@ const Dashboard = () => {
               <div className="inline-flex flex-col">
                 <div className="relative mb-3">
                   <CircularProgressbar
-                    value={report.notStarted}
+                    value={report.notStarted > 0 ? report.notStarted : 0}
                     maxValue={100}
                     counterClockwise={false}
                     strokeWidth={11}
@@ -412,7 +411,7 @@ const Dashboard = () => {
                     })}
                   />
                   <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold">
-                    {`${report.notStarted}%`}
+                    {`${report.notStarted > 0 ? report.notStarted : 0}%`}
                   </p>
                 </div>
                 <p className="flex items-center">

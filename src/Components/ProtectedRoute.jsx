@@ -5,17 +5,16 @@ import axios from "axios";
 import Loader from "./Loader";
 import { setUser, setAuth, setLoginLoading } from "../Redux/userSlice.js";
 import { toast } from "react-toastify";
-import { updateToken } from "../Redux/tokenSclice.js";
+import { setRefreshing, updateToken } from "../Redux/tokenSclice.js";
 import { verifyAuth } from "../api/user/user-api.js";
 
 const ProtectedRoute = ({ children }) => {
   let dispatch = useDispatch();
-  let navigate = useNavigate();
-  let token =
-    useSelector((state) => state.tokenBucket.token) ??
-    sessionStorage.getItem("todoToken");
+
+  let token = useSelector((state) => state.tokenBucket.token);
   let loading = useSelector((state) => state.user.loginLoading);
   let auth = useSelector((state) => state.user.auth.isAuthenticated);
+  let isRefreshing = useSelector((state) => state.tokenBucket.isRefreshing);
 
   let clearUserData = () => {
     dispatch(updateToken(null));
@@ -23,42 +22,44 @@ const ProtectedRoute = ({ children }) => {
     dispatch(setAuth(false));
     sessionStorage.removeItem("todoToken");
     sessionStorage.removeItem("todoUser");
-    navigate("/login");
   };
 
   useEffect(() => {
+    if (isRefreshing || !token) {
+      return;
+    }
+
+    dispatch(setLoginLoading(true));
+    console.log(token);
     let verifyToken = async () => {
-      if (token != null) {
-        try {
-          let res = await verifyAuth();
-          // console.log("Auth:", res);
-          if (res.isAuthenticated) {
-            dispatch(setUser(res.data));
-            dispatch(setAuth(true));
-          } else {
-            clearUserData();
-            toast.error("Something went wrong.");
-          }
-        } catch (error) {
+      try {
+        let res = await verifyAuth();
+        console.log("Auth:", res);
+        if (res.isAuthenticated) {
+          dispatch(setUser(res.data));
+          dispatch(setAuth(true));
+        } else {
           clearUserData();
-          console.log(error);
-        } finally {
-          dispatch(setLoginLoading(false));
+          toast.error("Something went wrong.");
         }
-      } else {
+      } catch (error) {
         clearUserData();
+        console.log(error);
+        toast.error(error.message);
+      } finally {
         dispatch(setLoginLoading(false));
       }
     };
 
     verifyToken();
-  }, [token, dispatch]);
+  }, [token]);
 
-  if (loading) return <Loader />;
+  if (loading || isRefreshing) return <Loader />;
 
   if (!auth) {
-    // console.log("Redirected to /login");
-    return <Navigate to="/login" replace />;
+    console.log("Redirected to /login-Protected route");
+    // return <Navigate to="/login" replace />;
+    console.log("NO TOKEN", token, auth);
   }
 
   return children;

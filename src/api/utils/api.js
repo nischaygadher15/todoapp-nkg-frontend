@@ -1,65 +1,71 @@
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { getNewAccessToken } from "./refreshToken";
+import { MyStore } from "../../store";
+import { setRefreshing, updateToken } from "../../Redux/tokenSclice";
+import { setAuth, setUser } from "../../Redux/userSlice";
+import { toast } from "react-toastify";
 
-//This is axios instance we have created
+// Axios instance
 let api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 5000,
+  withCredentials: true,
 });
 
-// Define default empty callbacks. These will be updated by the React hook.
-let _onUnauthorized = (msg) => console.warn("onUnauthorized callback not set.");
-let _onGeneralError = (msg) => console.warn("onGeneralError callback not set.");
-let _onLoadingChange = (loading) =>
-  console.warn("onLoadingChange callback not set.");
-
-export const setApiCallbacks = ({
-  onUnauthorized,
-  onGeneralError,
-  onLoadingChange,
-}) => {
-  if (onUnauthorized) _onUnauthorized = onUnauthorized;
-  if (onGeneralError) _onGeneralError = onGeneralError;
-  if (onLoadingChange) _onLoadingChange = onLoadingChange;
-  // console.log("setApiCallbacks: Callbacks updated."); // Add this log
-};
-
-// Axios request interceptors
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // console.log("request preparation started...");
     let accessToken = sessionStorage.getItem("todoToken");
     if (accessToken) {
       config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
-    _onLoadingChange(true);
-    // console.log("loading started..");
     return config;
   },
   (error) => {
-    _onLoadingChange(false);
-    // console.log("loading stopped..");
     return Promise.reject(error);
   }
 );
 
-// Axios response interceptors
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
-    if (response.config.url != "/login") _onLoadingChange(false);
-    // console.log("loading stopped..");
     return response;
   },
-  (error) => {
-    _onLoadingChange(false);
-    // console.log("loading stopped..");
-    console.log(error);
-    if (error.response && error.response.status == 401) {
-      _onUnauthorized(error.response.data.message);
+  async (error) => {
+    let originalRequest = error.config;
+
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      error.response.data?.isTokenExpired &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true; // prevent infinite loop
+
+      MyStore.dispatch(setRefreshing(true));
+      MyStore.dispatch(updateToken(null));
+      MyStore.dispatch(setUser(null));
+      MyStore.dispatch(setAuth(false));
+      sessionStorage.removeItem("todoToken");
+      sessionStorage.removeItem("todoUser");
+
+      console.log("Access token expired → refreshing...");
+      const newToken = await getNewAccessToken();
+
+      if (newToken) {
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        return api(originalRequest);
+      }
     } else {
-      _onGeneralError(error.message);
+      MyStore.dispatch(setAuth(false));
     }
 
+    // Any other error
+    if (error?.response?.data?.message) {
+      toast.error(error.response.data.message);
+    } else {
+      toast.error(error.message);
+    }
     return Promise.reject(error);
   }
 );

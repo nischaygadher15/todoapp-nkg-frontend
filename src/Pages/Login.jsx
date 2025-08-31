@@ -25,7 +25,12 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      useremail: "ram@g.com",
+      password: "Ram@123",
+    },
+  });
 
   let clearUserData = () => {
     dispatch(updateToken(null));
@@ -53,7 +58,7 @@ const Login = () => {
             message: data.message,
           },
         });
-        // toast.success(data.message)
+        toast.success(data.message);
       } else {
         toast.error("Somthing is wrong");
       }

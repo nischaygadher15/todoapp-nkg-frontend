@@ -14,6 +14,10 @@ import AccountInfo from "../Pages/AccountInfo";
 import CreateCategory from "../Pages/CreateCategory";
 import EditCategory from "../Pages/EditCategory";
 import ProtectedRoute from "../Components/ProtectedRoute";
+import { useDispatch } from "react-redux";
+import { MyStore } from "../store";
+import { setIsLoading } from "../Redux/loaderSlice";
+import { routeChangeLoader } from "../api/utils/routerLoaders";
 
 let dashboardTitle = (
   <>
@@ -33,8 +37,8 @@ let todorouter = createBrowserRouter([
     element: <App />,
     children: [
       { path: "/", element: <Login /> },
-      { path: "/register", element: <Register /> },
-      { path: "/login", element: <Login /> },
+      { path: "/register", element: <Register />, loader: routeChangeLoader },
+      { path: "/login", element: <Login />, loader: routeChangeLoader },
       {
         path: "/dashboard",
         element: (

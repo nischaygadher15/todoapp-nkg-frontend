@@ -9,13 +9,13 @@ Image Uploading for User - DONE
 My Task page,- DONE
 vital task page, - DONE
 category page Crud + DB,
-Setting pages, => account infor update - DONE, change password - 
-Help page,
-Refresh & Access Token,
+Setting pages, => account information update - DONE, change password - Done
+Help page, - Done
+Refresh & Access Token, - in progress
 Otp sign up / mobile registration
 login with google, facebook, github, instagram
-forgot password methods
-Mail new user for email verification
+forgot password methods - in progress
+Mail new user for email verification - in progress
 Pomodora timer features
 Reminder to user for taks => mobile msg / email
 calender feature like google calender, user can schedual wholw day in it.

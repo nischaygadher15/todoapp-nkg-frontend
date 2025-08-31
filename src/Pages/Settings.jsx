@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 const Settings = () => {
   return (
@@ -11,15 +12,21 @@ const Settings = () => {
         </p>
       </div>
       <div>
-        <ul className="ps-5 flex flex-col gap-3 list-disc">
+        <ul className="flex flex-col gap-3">
           <li>
-            <NavLink to="/accinfo" className="text-blue-600 font-semibold">
-              Account Info
+            <NavLink to="/accinfo" className="min-w-full">
+              <div className="w-full flex justify-between items-center bg-[#FF6767] py-2 px-4 rounded-md text-white font-semibold">
+                <p>Change Account Information</p>
+                <MdKeyboardArrowRight className="text-xl" />
+              </div>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/changepwd" className="text-blue-600 font-semibold">
-              Change Password
+            <NavLink to="/changepwd" className="min-w-full">
+              <div className="w-full flex justify-between items-center bg-[#FF6767] py-2 px-4 rounded-md text-white font-semibold">
+                <p>Change Password</p>
+                <MdKeyboardArrowRight className="text-xl" />
+              </div>
             </NavLink>
           </li>
         </ul>

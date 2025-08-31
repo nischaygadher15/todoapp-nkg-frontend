@@ -17,7 +17,7 @@ let initialState = {
   auth: {
     isAuthenticated: false,
   },
-  loginLoading: true,
+  loginLoading: false,
 };
 
 let userSlice = createSlice({

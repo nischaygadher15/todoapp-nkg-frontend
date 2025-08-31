@@ -37,7 +37,7 @@ const Mytasks = () => {
     id: null,
   });
   let [newUpload, setNewUpload] = useState(false);
-
+  let [fetchFlag, setFatchFlag] = useState(true);
   let [taskData, setTaskData] = useState({
     category: "",
     completedOn: "",
@@ -55,19 +55,19 @@ const Mytasks = () => {
   let fetchTasks = async () => {
     try {
       let data = await getTaskList();
-      // console.log(data.user);
-      if (!_.isEqual(data.user, userData)) {
-        dispatch(setUser(data.user));
-      }
+      MyTask = filterNotVitalTask(data.user.tasks);
+      SetMyTask([...MyTask]);
+      dispatch(setUser(data.user));
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    fetchTasks();
-    MyTask = filterNotVitalTask(userData.tasks);
-    SetMyTask([...MyTask]);
+    if (fetchFlag) {
+      fetchTasks();
+      setFatchFlag(false);
+    }
   }, [userData]);
 
   useEffect(() => {
@@ -117,6 +117,7 @@ const Mytasks = () => {
       if (res.success && res.upload) {
         reset();
         setEditTaskModel(false);
+        setFatchFlag(true);
         await fetchTasks();
         toast.success(res.uploadMessage);
         toast.success(res.message);
@@ -137,6 +138,7 @@ const Mytasks = () => {
     dispatch(setIsLoading(true));
     try {
       let data = await deleteTaskById(activeCard.id);
+      setFatchFlag(true);
       await fetchTasks();
     } catch (error) {
       console.log(error);

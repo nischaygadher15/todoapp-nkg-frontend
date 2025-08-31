@@ -19,13 +19,20 @@ const ChangeUserPassword = () => {
     handleSubmit,
     setValue,
     getValues,
+    reset,
     formState: { errors },
   } = useForm();
 
   let changePassSubmit = async (data) => {
     try {
       let changePassResult = await changePassword(data);
-      console.log(changePassResult);
+      // console.log(changePassResult);
+      if (changePassResult.success) {
+        reset();
+        toast.success(changePassResult.message);
+      } else {
+        toast.error(changePassResult.message);
+      }
     } catch (error) {
       console.log(error);
       toast.error(error.message);
@@ -114,7 +121,7 @@ const ChangeUserPassword = () => {
                     value:
                       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~!@#%^&*()\[\]_+\-=?<>])[A-Za-z\d~!@#%^&*()\[\]_+\-=?<>]{6,}$/,
                     message:
-                      "password must have 1 aphabet, 1 capital aphabet, 1 number, 1 special character and total 6 characters at least",
+                      "password must have 1 aphabet, 1 capital aphabet, 1 number, 1 special character and 6 characters at least",
                   },
                 })}
               />
@@ -150,14 +157,14 @@ const ChangeUserPassword = () => {
                     value: true,
                     message: "confirm password is required.",
                   },
-                  // validate: {
-                  //   sameAsPassword: (value) => {
-                  //     return (
-                  //       value === getValues("newPassword") ||
-                  //       "password do not match"
-                  //     );
-                  //   },
-                  // },
+                  validate: {
+                    sameAsPassword: (value) => {
+                      return (
+                        value === getValues("newPassword") ||
+                        "password do not match"
+                      );
+                    },
+                  },
                 })}
               />
               <button
