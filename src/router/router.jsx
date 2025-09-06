@@ -37,8 +37,8 @@ let todorouter = createBrowserRouter([
     element: <App />,
     children: [
       { path: "/", element: <Login /> },
-      { path: "/register", element: <Register />, loader: routeChangeLoader },
-      { path: "/login", element: <Login />, loader: routeChangeLoader },
+      { path: "/register", element: <Register /> },
+      { path: "/login", element: <Login /> },
       {
         path: "/dashboard",
         element: (
