@@ -9,12 +9,14 @@ import {
 import { Bounce, ToastContainer } from "react-toastify";
 import Loader from "./Components/Loader";
 import { useDispatch, useSelector } from "react-redux";
+import { Analytics } from "@vercel/analytics/next";
 
 function App() {
   let loading = useSelector((state) => state.loader.isLoading);
 
   return (
     <div>
+      <Analytics />
       {loading && <Loader />}
       <ToastContainer
         position="top-right"
