@@ -24,7 +24,7 @@ export const getNewAccessToken = async () => {
       userId,
     });
 
-    // console.log("refreshTkResp.data", refreshTkResp.data);
+    console.log("refreshTkResp.data", refreshTkResp.data);
 
     if (refreshTkResp.data.success && refreshTkResp.data.token) {
       MyStore.dispatch(updateToken(refreshTkResp.data.token));

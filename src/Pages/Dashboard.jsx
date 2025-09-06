@@ -89,6 +89,7 @@ const Dashboard = () => {
 
   // Get task method to fetch
   let fetchTasks = async () => {
+    dispatch(setIsLoading(true));
     try {
       let data = await getTaskList();
 
@@ -121,6 +122,9 @@ const Dashboard = () => {
       dispatch(setUser(data.user));
     } catch (error) {
       console.log(error);
+      toast.error(error.message);
+    } finally {
+      setTimeout(() => dispatch(setIsLoading(false)), 300);
     }
   };
 

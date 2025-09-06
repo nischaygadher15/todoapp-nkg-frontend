@@ -32,14 +32,6 @@ const Login = () => {
     },
   });
 
-  let clearUserData = () => {
-    dispatch(updateToken(null));
-    dispatch(setUser(null));
-    dispatch(setAuth(false));
-    sessionStorage.removeItem("todoToken");
-    sessionStorage.removeItem("todoUser");
-  };
-
   const handleLogin = async (userdata) => {
     // console.log(userdata);
     try {
@@ -59,9 +51,8 @@ const Login = () => {
             message: data.message,
           },
         });
-        // toast.success(data.message);
       } else {
-        toast.error("Somthing is wrong");
+        toast.error("Something is wrong");
       }
     } catch (error) {
       console.log(error.message);

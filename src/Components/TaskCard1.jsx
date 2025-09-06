@@ -214,13 +214,11 @@ const TaskCard1 = ({
           </div>
           <div className="">
             {cardData.cardImage != "no image" ? (
-              <>
-                <img
-                  src={cardData.cardImage}
-                  alt="Card Image"
-                  className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
-                />
-              </>
+              <img
+                src={cardData.cardImage}
+                alt="Card Image"
+                className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl"
+              />
             ) : (
               <>
                 <FaRegImage className="w-[60px] h-[60px] xl:w-[70px] xl:h-[70px] rounded-2xl text-[#A1A3AB]" />

@@ -58,8 +58,14 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading || isRefreshing) return <Loader />;
 
-  if (!auth) {
-    console.log("NO TOKEN", token, auth, sessionStorage.getItem("todoUserId"));
+  if (!auth && !isRefreshing) {
+    console.log(
+      "NO AUTH:",
+      !isRefreshing,
+      !token,
+      !auth,
+      sessionStorage.getItem("todoUserId")
+    );
 
     if (!token && !auth && sessionStorage.getItem("todoUserId")) {
       // MyStore.dispatch(setRefreshing(true));

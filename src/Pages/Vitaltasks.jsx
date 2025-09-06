@@ -53,6 +53,7 @@ const Vitaltasks = () => {
 
   // Get task method to fetch
   let fetchTasks = async () => {
+    dispatch(setIsLoading(true));
     try {
       let data = await getTaskList();
       //Filter all not completed tasks
@@ -61,6 +62,8 @@ const Vitaltasks = () => {
       dispatch(setUser(data.user));
     } catch (error) {
       console.log(error);
+    } finally {
+      setTimeout(() => dispatch(setIsLoading(false)), 300);
     }
   };
 
@@ -96,6 +99,7 @@ const Vitaltasks = () => {
   }
   let onAddTask = async (data) => {
     console.log(data);
+    dispatch(setIsLoading(true));
     let res;
 
     let formData = new FormData();
@@ -122,20 +126,23 @@ const Vitaltasks = () => {
         setEditTaskModel(false);
         setFatchFlag(true);
         await fetchTasks();
-        toast.success(res.uploadMessage);
+        if (res.uploadMessage) toast.success(res.uploadMessage);
         toast.success(res.message);
       }
     } catch (error) {
       console.log(error);
     } finally {
       setNewUpload(false);
+      setTimeout(() => dispatch(setIsLoading(false)), 300);
     }
   };
 
   let getTaskData = async (taskId) => {
+    dispatch(setIsLoading(true));
     let data = await getTaskById(taskId);
     // console.log(data.task);
     setTaskData(data.task);
+    setTimeout(() => dispatch(setIsLoading(false)), 300);
   };
 
   const handleDelete = async () => {
@@ -148,6 +155,8 @@ const Vitaltasks = () => {
     } catch (error) {
       console.log(error);
       toast.error("Error in deleting task");
+    } finally {
+      setTimeout(() => dispatch(setIsLoading(false)), 300);
     }
   };
 
@@ -286,16 +295,14 @@ const Vitaltasks = () => {
           {vitalTask.length > 0 ? (
             <div className="min-h-full max-h-screen flex flex-col justify-between p-5 rounded-xl shadow-lg border-1 border-[#bebebe]">
               {/* Task Header */}
-              <div className="w-full max-h-80 flex gap-3 mb-4">
+              <div className="w-full flex gap-3 mb-4">
                 <div className="w-2/5">
                   {taskData.taskimage.secure_url ? (
-                    <>
-                      <img
-                        src={taskData.taskimage.secure_url}
-                        alt="Task Image"
-                        className="w-full h-full rounded-xl"
-                      />
-                    </>
+                    <img
+                      src={taskData.taskimage.secure_url}
+                      alt="Task Image"
+                      className="w-full max-h-30 rounded-xl"
+                    />
                   ) : (
                     <div>
                       <FaRegImage className="w-full h-full rounded-2xl text-[#A1A3AB]" />
