@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
-import Register from "../Pages/Register";
 import Login from "../Pages/Login";
 import DashboardLayout from "../Layouts/DashboardLayout";
 import Dashboard from "../Pages/Dashboard";
@@ -14,10 +13,7 @@ import AccountInfo from "../Pages/AccountInfo";
 import CreateCategory from "../Pages/CreateCategory";
 import EditCategory from "../Pages/EditCategory";
 import ProtectedRoute from "../Components/ProtectedRoute";
-import { useDispatch } from "react-redux";
-import { MyStore } from "../store";
-import { setIsLoading } from "../Redux/loaderSlice";
-import { routeChangeLoader } from "../api/utils/routerLoaders";
+import Register from "../Pages/Register";
 
 let dashboardTitle = (
   <>
