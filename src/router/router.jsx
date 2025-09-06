@@ -14,6 +14,7 @@ import CreateCategory from "../Pages/CreateCategory";
 import EditCategory from "../Pages/EditCategory";
 import ProtectedRoute from "../Components/ProtectedRoute";
 import Register from "../Pages/Register";
+import { routeChangeLoader } from "../api/utils/routerLoaders";
 
 let dashboardTitle = (
   <>
@@ -32,9 +33,9 @@ let todorouter = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      { path: "/", element: <Login /> },
-      { path: "/register", element: <Register /> },
-      { path: "/login", element: <Login /> },
+      { path: "/", element: <Login />, loader: routeChangeLoader },
+      { path: "/register", element: <Register />, loader: routeChangeLoader },
+      { path: "/login", element: <Login />, loader: routeChangeLoader },
       {
         path: "/dashboard",
         element: (
