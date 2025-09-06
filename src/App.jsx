@@ -15,7 +15,6 @@ function App() {
 
   return (
     <div>
-      <Analytics />
       {loading && <Loader />}
       <ToastContainer
         position="top-right"
