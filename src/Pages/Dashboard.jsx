@@ -1,17 +1,5 @@
-import {
-  Avatar,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
+import { Avatar, Button, Dialog } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import matsya from "../assets/Matsya.jpg";
-import kurma from "../assets/Kurma.jpg";
-import varah from "../assets/Varah.jpg";
-import vaman from "../assets/Vaman.jpg";
 import { HiUserAdd } from "react-icons/hi";
 import {
   BsClipboardCheck,
@@ -80,7 +68,15 @@ const Dashboard = () => {
     }
   }, [location.state]);
 
-  let dashavatar = [matsya, kurma, varah, vaman];
+  let dashavatar = [
+    "https://randomuser.me/api/portraits/men/32.jpg",
+
+    "https://randomuser.me/api/portraits/women/44.jpg",
+
+    "https://randomuser.me/api/portraits/men/76.jpg",
+
+    "https://randomuser.me/api/portraits/women/65.jpg",
+  ];
 
   // Invote Model close function
   let handleClose = () => {
