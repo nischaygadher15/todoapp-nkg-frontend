@@ -31,6 +31,7 @@ const Register = () => {
   let onSubmit = async (data) => {
     // console.log(data);
     // let encryptedData = EncryptData(JSON.stringify(data));
+    dispatch(setIsLoading(true));
     try {
       let res = await createUser(data);
       console.log(res);
@@ -42,6 +43,8 @@ const Register = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setTimeout(() => dispatch(setIsLoading(false)), 300);
     }
   };
 
